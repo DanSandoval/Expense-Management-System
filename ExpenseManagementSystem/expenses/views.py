@@ -1,7 +1,22 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .utils import generate_expense_report
-from .forms import YourReportForm
+from .forms import YourReportForm, ExpenseForm
 # Import other necessary modules
+
+def home(request):
+    return render(request, 'expenses/home.html')
+
+def add_expense(request):
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST, user=request.user)
+        if form.is_valid():
+            expense = form.same(commit=False)
+            expense.user = request.user
+            expense.save()
+            return redirect('expenses') # redirect to a page where you list expenses
+    else:
+        form = ExpenseForm(user=request.user)
+    return render(request, 'expenses/add_expense.html', {'form': form})
 
 def expense_report_view(request):
     # Assuming you have a form to capture report parameters

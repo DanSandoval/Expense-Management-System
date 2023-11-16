@@ -6,6 +6,7 @@ import uuid
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True) # Optional: to allow user-specific categories
     
     def __str__(self):
         return self.name

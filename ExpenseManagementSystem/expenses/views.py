@@ -8,14 +8,14 @@ def home(request):
 
 def add_expense(request):
     if request.method == 'POST':
-        form = ExpenseForm(request.POST, user=request.user)
+        form = ExpenseForm(request.POST)
         if form.is_valid():
-            expense = form.same(commit=False)
+            expense = form.save(commit=False)
             expense.user = request.user
             expense.save()
-            return redirect('expenses') # redirect to a page where you list expenses
+            return redirect('home') # redirect to a page where you list expenses
     else:
-        form = ExpenseForm(user=request.user)
+        form = ExpenseForm(user=request.user)#this loads the categories connected to a specific user
     return render(request, 'expenses/add_expense.html', {'form': form})
 
 def expense_report_view(request):

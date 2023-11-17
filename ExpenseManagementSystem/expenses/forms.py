@@ -1,10 +1,11 @@
 from django import forms
 from .models import Expense, Category
+from django.forms import ModelForm
 
 class YourReportForm(forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     end_date =  forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-    category = forms.ModelChoiceField(queryset= Category.objects.all(), required=False)
+    category = forms.ModelChoiceField(queryset= Category.objects.order_by('name').values_list('name', flat=True).distinct(), required=False)
     
 class ExpenseForm(forms.ModelForm):
     class Meta:
@@ -12,6 +13,7 @@ class ExpenseForm(forms.ModelForm):
         fields = ['title', 'amount', 'date', 'category']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
+            'category': forms.Select()
         }
         
     def __init__(self, *args, **kwargs):

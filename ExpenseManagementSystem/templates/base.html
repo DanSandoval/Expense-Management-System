@@ -17,6 +17,13 @@
             <a href="{% url 'add_expense' %}">Add Expense</a>
             <a href="{% url 'generate_report' %}"> Reports</a>
             <!-- Add more navigation links here -->
+            {% if user.is_authenticated %}
+            <p>Welcome, {{ user.username }}!</p>
+            <a href="{% url 'logout' %}">Log Out</a>
+        {% else %}
+            <a href="{% url 'login' %}">Log In</a>
+            <!-- Optionally include link to sign-up page if you have one -->
+        {% endif %}
         </nav>
     </header>
 

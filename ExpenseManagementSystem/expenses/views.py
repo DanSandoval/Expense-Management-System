@@ -15,7 +15,7 @@ def add_expense(request):
             expense.save()
             return redirect('home') # redirect to a page where you list expenses
     else:
-        form = ExpenseForm(user=request.user)#this loads the categories connected to a specific user
+        form = ExpenseForm()#this loads the categories connected to a specific user
     return render(request, 'expenses/add_expense.html', {'form': form})
 
 def expense_report_view(request):

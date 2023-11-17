@@ -16,9 +16,9 @@ class ExpenseForm(forms.ModelForm):
             'category': forms.Select()
         }
         
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
-        super(ExpenseForm, self).__init__(*args, **kwargs)
-        if user is not None:
-            self.fields['category'].queryset = Category.objects.filter(user=user)
+    # def __init__(self, *args, **kwargs):
+    #     #user = kwargs.pop('user', None)
+    #     super(ExpenseForm, self).__init__(*args, **kwargs)
+    #     if user is not None:
+    #         self.fields['category'].queryset = Category.objects.all()
             

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Expense, Category
+from .models import Expense, Category, UserProfile
 from django.forms import ModelForm
 
 class YourReportForm(forms.Form):
@@ -21,4 +21,9 @@ class ExpenseForm(forms.ModelForm):
     #     super(ExpenseForm, self).__init__(*args, **kwargs)
     #     if user is not None:
     #         self.fields['category'].queryset = Category.objects.all()
-            
+        
+class UserProfileForm(forms.ModelForm):
+    
+    class Meta:
+        model = UserProfile
+        fields = ['bio', 'phone_number', 'birth_date', 'profile_picture']

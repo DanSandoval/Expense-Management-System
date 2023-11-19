@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
 from django.urls import include, path
-from expenses.views import expense_report_view, add_expense, home
+from expenses.views import expense_report_view, add_expense, home, edit_profile
 
 urlpatterns = [
     path('', home, name='home'),
@@ -26,4 +26,5 @@ urlpatterns = [
     path('generate-report/',expense_report_view, name= 'generate_report'),
     path('add-expense/',add_expense, name='add_expense'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('edit-profile/', edit_profile, name='edit-profile'),
 ]

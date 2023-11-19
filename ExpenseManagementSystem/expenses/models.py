@@ -3,6 +3,16 @@ from django.contrib.auth.models import User
 import uuid
 
 # Create your models here.
+class UserProfiles(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio =models.TextField(max_length=500, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True)  
+    birth_date = models.DateField(null=True, blank=True)  
+    
+    def __str__(self):
+        return self.user.username
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
@@ -25,6 +35,9 @@ class Expense(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=15, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    bio = models.TextField(max_length=500, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
     #many additional field possible here
     """profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)

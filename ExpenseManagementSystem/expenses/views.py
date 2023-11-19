@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from .utils import generate_expense_report
-from .forms import YourReportForm, ExpenseForm
+from .forms import YourReportForm, ExpenseForm, UserProfileForm
+from .models import UserProfile
 # Import other necessary modules
 
 def home(request):
@@ -36,4 +37,26 @@ def expense_report_view(request):
         form = YourReportForm()
 
     return render(request, 'expenses/report_form.html', {'form': form})
-# Create your views here.
+
+def edit_profile(request):
+    user = request.user
+    try:
+        user_profile = user.userprofile
+    except UserProfile.DoesNotExist:
+        user_profile = UserProfile.objects.create(user=user)
+        
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=request.user.userprofile)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # Redirect to the profile page
+    else:
+        form = UserProfileForm(instance=request.user.userprofile)
+        
+    return render(request, 'edit_profile.html', {'form': form})
+
+
+
+# Create additional views here.
+
+

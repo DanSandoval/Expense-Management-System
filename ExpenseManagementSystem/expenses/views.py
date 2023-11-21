@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from .utils import generate_expense_report
 from .forms import YourReportForm, ExpenseForm, UserProfileForm
 from .models import UserProfile
+from django.contrib.auth.forms import UserCreationForm
 # Import other necessary modules
 
 def home(request):
@@ -20,7 +21,7 @@ def add_expense(request):
     return render(request, 'expenses/add_expense.html', {'form': form})
 
 def expense_report_view(request):
-    # Assuming you have a form to capture report parameters
+    context = {'form': YourReportForm()}
     if request.method == 'POST':
         form = YourReportForm(request.POST)
         if form.is_valid():
@@ -28,15 +29,9 @@ def expense_report_view(request):
             start_date = form.cleaned_data['start_date']
             end_date = form.cleaned_data['end_date']
             category = form.cleaned_data.get('category')  # optional
-
-            total_expense = generate_expense_report(user, start_date, end_date, category)
-            # Now you can pass total_expense to your template or further processing
-            return render(request, 'expenses/report_form.html')
-
-    else:
-        form = YourReportForm()
-
-    return render(request, 'expenses/report_form.html', {'form': form})
+            report_data = generate_expense_report(user, start_date, end_date, category)
+            context.update(report_data)
+    return render(request, 'expenses/report_form.html', context)
 
 def edit_profile(request):
     user = request.user
@@ -55,6 +50,15 @@ def edit_profile(request):
         
     return render(request, 'edit_profile.html', {'form': form})
 
+def register_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')  # Redirect to the login page after successful registration
+    else:
+        form = UserCreationForm()
+    return render(request, 'register.html', {'form': form})
 
 
 # Create additional views here.

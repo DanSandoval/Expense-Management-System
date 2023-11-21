@@ -22,6 +22,33 @@
           {% endfor %}
           <button type="submit" class="btn btn-primary">Generate Report</button>
         </form>
+
+        {% if expenses %}
+          <h3 class="mt-4">Expense Report</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Category</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for expense in expenses %}
+                <tr>
+                  <td>{{ expense.title }}</td>
+                  <td>{{ expense.amount }}</td>
+                  <td>{{ expense.date }}</td>
+                  <td>{{ expense.category.name }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="text-right">
+            <strong>Total: </strong> {{ total_expense }}
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>

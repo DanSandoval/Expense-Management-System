@@ -1,14 +1,28 @@
+<!-- templates/expenses/report_form.html -->
 {% extends 'base.html' %}
 
-{% block title %}
-    Generate Report
-{% endblock %}
-
 {% block content %}
-    <h1>Generate Expense Report</h1>
-    <form method="post" action="{% url 'generate_report' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Generate Report</button>
-    </form>
+  <div class="container mt-4">
+    <h2 class="mb-3">Generate Expense Report</h2>
+    <div class="card">
+      <div class="card-body">
+        <form method="post" class="form">
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="form-group">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text }}</small>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary">Generate Report</button>
+        </form>
+      </div>
+    </div>
+  </div>
 {% endblock %}

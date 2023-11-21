@@ -69,3 +69,11 @@ class Report(models.Model):
     def __str__(self):
         return f"{self.title} - {self.user.username}"
     
+class RecurringExpense(models.Model):
+    expense = models.ForeignKey(Expense, on_delete=models.CASCADE)
+    frequency = models.CharField(max_length=50)  # e.g., 'daily', 'weekly', 'monthly'
+    recurring_from = models.DateField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.expense.title} - {self.frequency}"

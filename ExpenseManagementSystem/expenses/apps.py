@@ -1,6 +1,9 @@
 from django.apps import AppConfig
-
+from django.core.management import call_command
 
 class ExpensesConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
     name = 'expenses'
+
+    def ready(self):
+        #Add this line to call your custom command at startup
+        call_command('populate_recurring_expenses')

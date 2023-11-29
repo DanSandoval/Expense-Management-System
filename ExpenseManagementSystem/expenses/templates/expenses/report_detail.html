@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">{{ report.title }}</h2>
+    <div class="card">
+        <div class="card-body">
+            <p><strong>Report Title:</strong> {{ report.title }}</p>
+            <p><strong>Created On:</strong> {{ report.created_date|date:"F j, Y, P" }}</p>
+            {% if report.report_file %}
+                <p><a href="{{ report.report_file.url }}" class="btn btn-primary">Download Report</a></p>
+            {% else %}
+                <p>No file attached to this report.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

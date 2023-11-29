@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}View Reports{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Your Reports</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ report.title }}</td>
+                    <td>{{ report.created_date|date:"M d, Y H:i" }}</td>
+                    <td>
+                        {% if report.report_file %}
+                        <a href="{{ report.report_file.url }}" class="btn btn-primary btn-sm" download>Download</a>
+                        {% endif %}
+                        <!-- Additional actions like view details could go here -->
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">No reports found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

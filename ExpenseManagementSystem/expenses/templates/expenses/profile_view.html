@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h2 class="mb-3">Profile</h2>
+    <div class="card">
+      <div class="card-body">
+        {% if user_profile %}
+          <p><strong>Bio:</strong> {{ user_profile.bio }}</p>
+          <p><strong>Phone Number:</strong> {{ user_profile.phone_number }}</p>
+          <p><strong>Birth Date:</strong> {{ user_profile.birth_date|date:"Y-m-d" }}</p>
+          {% if user_profile.profile_picture %}
+            <p><strong>Profile Picture:</strong> <img src="{{ user_profile.profile_picture.url }}" alt="Profile Picture"></p>
+          {% else %}
+            <p>No profile picture available.</p>
+          {% endif %}
+          <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+        {% else %}
+          <p>No profile information available. <a href="{% url 'edit_profile' %}">Edit Profile</a></p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% comment %} {% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h2 class="mb-3">Profile</h2>
+    <div class="card">
+      <div class="card-body">
+        {% if user_profile %}
+          <p><strong>Bio:</strong> {{ user_profile.bio }}</p>
+          <!-- Other profile fields -->
+        {% else %}
+          <p>No profile information available.</p>
+        {% endif %}
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+      </div>
+    </div>
+  </div>
+{% endblock %} {% endcomment %}
+<!-- templates/expenses/profile_view.html -->
+

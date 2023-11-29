@@ -1,0 +1,20 @@
+<!-- expenses/templates/expenses/expense_confirmation.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Expense Added Successfully</h2>
+    <div class="card">
+        <div class="card-body">
+            <h3>Expense Details</h3>
+            <p>Title: {{ expense.title }}</p>
+            <p>Amount: {{ expense.amount }}</p>
+            <p>Date: {{ expense.date }}</p>
+            <p>Category: {{ expense.category.name }}</p>
+            <!-- Add more fields as necessary -->
+        </div>
+    </div>
+    <a href="{% url 'add_expense' %}" class="btn btn-primary mt-3">Add Another Expense</a>
+</div>
+{% endblock %}

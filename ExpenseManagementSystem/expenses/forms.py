@@ -5,7 +5,8 @@ from django.forms import ModelForm
 class YourReportForm(forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     end_date =  forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-    category = forms.ModelChoiceField(queryset= Category.objects.order_by('name').values_list('name', flat=True).distinct(), required=False)
+    category = forms.ModelChoiceField(queryset=Category.objects.order_by('name').distinct(), required=False)
+
     
 class ExpenseForm(forms.ModelForm):
     

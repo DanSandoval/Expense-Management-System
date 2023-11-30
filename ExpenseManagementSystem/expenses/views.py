@@ -5,6 +5,10 @@ from .models import UserProfile, Expense, Report
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse
 from django.contrib import messages
+import csv
+import os
+from django.conf import settings
+from django.core.files.base import ContentFile
 
 # Import other necessary modules
 
@@ -44,23 +48,42 @@ def generate_report_view(request):
             # Create a new Report instance
             report = Report()
             report.user = user
-            # Set other fields for the report, such as title, created_date, etc.
             report.title = f"Report from {start_date} to {end_date}"
 
-            # Assume generate_expense_report returns data for the report
+            # Generate the report data
             report_data = generate_expense_report(user, start_date, end_date, category)
-            #might generate a file or a summary text here
+            
+            # Define CSV file path
+            csv_file_name = f'report_{user.id}_{start_date}_to_{end_date}.csv'
+            csv_file_path = os.path.join(settings.MEDIA_ROOT, 'reports', csv_file_name)
 
-            report.save()  # Save the report instance
+            # Check if the directory exists, create if it doesn't
+            if not os.path.exists(os.path.dirname(csv_file_path)):
+                os.makedirs(os.path.dirname(csv_file_path))
 
-            # Update context or redirect as needed
+            # Write CSV file
+            with open(csv_file_path, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                headers = ['Title', 'Amount', 'Date', 'Category']
+                writer.writerow(headers)
+                for expense in report_data['expenses']:
+                    row = [expense.title, expense.amount, expense.date, expense.category.name]
+                    writer.writerow(row)
+
+            # Attach the CSV file to the report
+            with open(csv_file_path, 'rb') as f:
+                report.report_file.save(csv_file_name, ContentFile(f.read()))
+
+            # Save the report instance
+            report.save()
+
             messages.success(request, 'Report generated successfully.')
-            return redirect('view_reports')  # Redirect to the reports view page
+            return redirect('view_reports')
         else:
-            print(form.errors)
             messages.error(request, 'Error in generating report.')
 
     return render(request, 'expenses/report_form.html', context)
+
 
 def edit_profile(request):
     user = request.user

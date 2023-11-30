@@ -18,11 +18,12 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
 from expenses.views import generate_report_view, add_expense, home, report_detail, edit_profile, register_view, expense_confirmation, profile_view, view_reports
 
 urlpatterns = [
     path('', home, name='home'),
-    path("polls/", include("polls.urls")),
     path("admin/", admin.site.urls),
     path('generate-report/',generate_report_view, name= 'generate_report'),
     path('add-expense/',add_expense, name='add_expense'),
@@ -35,4 +36,4 @@ urlpatterns = [
     path('edit-profile/', edit_profile, name='edit_profile'),
     path('view-reports/', view_reports, name='view_reports'),
     path('report/<int:report_id>/', report_detail, name='report_detail'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,7 @@
+# Ignore local settings
+settings_local.py
+
+# Ignore other common files/directories
+__pycache__/
+.DS_Store
+*.log

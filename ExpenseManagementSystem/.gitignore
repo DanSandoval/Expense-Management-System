@@ -6,3 +6,5 @@ __pycache__/
 .DS_Store
 *.log
 db.sqlite3
+ExpenseManagementSystem/db.sqlite3
+~$Plan.xlsx

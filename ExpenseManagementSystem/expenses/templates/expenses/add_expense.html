@@ -23,6 +23,11 @@
                   <div class="alert alert-danger">{{ error }}</div>
                 {% endfor %}
               </div>
+            {% elif field.name == 'is_recurring' %}
+              <!-- Hiding the 'Recurring Charge' checkbox -->
+              <div class="form-group d-none">
+                {{ field }}
+              </div>
             {% else %}
               <div class="form-group">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>

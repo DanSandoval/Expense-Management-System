@@ -1,8 +1,25 @@
-<!-- In expenses/templates/expenses/home.html -->
-
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Welcome to the Expense Management System</h1>
-<p>This is the home page.</p>
+  <h1>Welcome to My Personal Expense Management System</h1>
+  <p>As a passionate and aspiring software engineer, this project is a testament to my dedication to building innovative and efficient software solutions. It demonstrates my ability to translate complex requirements into user-friendly applications, reflecting my commitment to enhancing user experience and operational efficiency.</p>
+
+  <div class="alert alert-info">
+    <p>This system showcases:</p>
+    <ul>
+      <li>Expertly crafted, efficient, and intuitive interfaces showcasing my advanced skills in JavaScript and a strong focus on UI/UX design principles.</li>
+      <li>Backend implementation in Python, demonstrating my flexibility and desire to work with diverse tech stacks.</li>
+      <li>Effective integration of customer feedback into product development, simulating a real-world agile development environment.</li>
+    </ul>
+    <p>To get a feel for an existing account, you can log in with:</p>
+    <ul>
+      <li><strong>Username:</strong> SampleUser</li>
+      <li><strong>Password:</strong> SamplePassword</li>
+    </ul>
+    <p>You can also <a href="{% url 'register' %}">sign up for a new account</a> to test the full user journey.</p>
+  </div>
+
+  <p>Feel free to explore the functionalities and experience the intuitiveness of the system. Your feedback is invaluable and will be integral to my continuous learning process.</p>
+  <p>As I look forward to a career where I can contribute to building impactful technology solutions, I welcome your thoughts and feedback at <a href="mailto:dsandovalmail@gmail.com">dsandovalmail@gmail.com</a>. Thank you for exploring my work!</p>
+  <p>Thank you for your interest in my work!</p>
 {% endblock %}

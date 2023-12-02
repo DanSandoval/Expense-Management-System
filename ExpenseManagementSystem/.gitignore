@@ -8,3 +8,6 @@ __pycache__/
 db.sqlite3
 ExpenseManagementSystem/db.sqlite3
 ~$Plan.xlsx
+venv/
+*.xlsx
+~$*.xlsx

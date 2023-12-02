@@ -9,12 +9,14 @@ import csv
 import os
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.contrib.auth.decorators import login_required
 
 # Import other necessary modules
 
 def home(request):
     return render(request, 'expenses/home.html')
 
+@login_required
 def add_expense(request):
     if request.method == 'POST':
         form = ExpenseForm(request.POST)
@@ -27,6 +29,7 @@ def add_expense(request):
         form = ExpenseForm()#this loads the categories connected to a specific user
     return render(request, 'expenses/add_expense.html', {'form': form})
 
+@login_required
 def view_reports(request):
     user = request.user
     user_reports = Report.objects.filter(user=request.user).order_by('-created_date')
@@ -35,6 +38,7 @@ def view_reports(request):
     context = {'reports': user_reports}
     return render(request, 'expenses/view_reports.html', context)
 
+@login_required
 def generate_report_view(request):
     context = {'form': YourReportForm()}
     if request.method == 'POST':

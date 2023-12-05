@@ -1,6 +1,8 @@
 <!-- templates/expenses/report_form.html -->
 {% extends 'base.html' %}
 
+{% load widget_tags %}  <!-- Load the custom filter -->
+
 {% block content %}
   <div class="container mt-4">
     <h2 class="mb-3">Generate Expense Report</h2>
@@ -9,9 +11,18 @@
         <form method="post" class="form">
           {% csrf_token %}
           {% for field in form %}
-            <div class="form-group">
-              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-              {{ field }}
+            <div class="form-group{% if field|widget_class == 'CheckboxSelectMultiple' %} checkboxes{% endif %}">
+              <label>{{ field.label }}</label>
+              {% if field|widget_class == 'CheckboxSelectMultiple' %}
+                {% for choice in field %}
+                  <div class="form-check">
+                    {{ choice.tag }}
+                    <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
+                  </div>
+                {% endfor %}
+              {% else %}
+                {{ field }}
+              {% endif %}
               {% if field.help_text %}
                 <small class="form-text text-muted">{{ field.help_text }}</small>
               {% endif %}

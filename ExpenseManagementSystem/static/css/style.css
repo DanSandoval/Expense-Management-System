@@ -1,0 +1,28 @@
+/* style.css */
+.github-link {
+    text-decoration: none; /* Removes underline from links */
+    color: #333; /* Dark text color for readability */
+    font-family: Arial, sans-serif; /* Font styling */
+    display: inline-flex; /* Aligns icon with text */
+    align-items: center; /* Aligns icon and text vertically */
+    gap: 8px; /* Space between icon and text */
+  }
+  
+  .github-icon {
+    width: 55px; /* Size of the GitHub icon */
+    height: 22.55px;
+  }
+  
+  .linkedin-link {
+    text-decoration: none; /* Removes underline from links */
+    color: #333; /* Dark text color for readability */
+    font-family: Arial, sans-serif; /* Font styling */
+    display: inline-flex; /* Aligns icon with text */
+    align-items: center; /* Aligns icon and text vertically */
+    gap: 8px; /* Space between icon and text */
+  }
+  
+  .linkedin-icon {
+    width: 73.73px; /* Size of the GitHub icon */
+    height: 18px;
+  }

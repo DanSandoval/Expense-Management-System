@@ -5,12 +5,20 @@ from django.core.validators import RegexValidator
 
 class YourReportForm(forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-    end_date =  forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-    category = forms.ModelChoiceField(queryset=Category.objects.order_by('name').distinct(), required=False)
-
+    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.order_by('name').distinct(),
+        widget=forms.CheckboxSelectMultiple,  # Or forms.SelectMultiple for a dropdown
+        required=False
+    )
     
 class ExpenseForm(forms.ModelForm):
     
+    category = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(),
+        widget=forms.CheckboxSelectMultiple(),
+        required=False
+    )
     is_recurring = forms.BooleanField(required=False, label="Recurring Expense?")
     frequency = forms.ChoiceField(choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], required=False)
     recurring_from = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
@@ -19,9 +27,9 @@ class ExpenseForm(forms.ModelForm):
         fields = ['title', 'amount', 'date', 'category', 'is_recurring', 'frequency']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
-            'category': forms.Select(),
-            'recurring_from': forms.DateInput(attrs={'type': 'date'}),  # Add this line
-        }
+            'recurring_from': forms.DateInput(attrs={'type': 'date'}),
+            'categories': forms.CheckboxSelectMultiple(),
+            }
         labels = {
             'recurring_from': 'First Recurrence Date',  # Update the label here
         }

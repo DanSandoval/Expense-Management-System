@@ -36,7 +36,7 @@ urlpatterns = [
     path('edit-profile/', edit_profile, name='edit_profile'),
     path('view-reports/', view_reports, name='view_reports'),
     path('report/<int:report_id>/', report_detail, name='report_detail'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

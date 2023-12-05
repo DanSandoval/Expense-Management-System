@@ -24,6 +24,7 @@ def add_expense(request):
             expense = form.save(commit=False)
             expense.user = request.user
             expense.save()
+            form.save_m2m()
             return redirect(reverse('expense_confirmation', kwargs={'expense_id': expense.id}))
     else:
         form = ExpenseForm()#this loads the categories connected to a specific user
@@ -38,12 +39,87 @@ def view_reports(request):
     context = {'reports': user_reports}
     return render(request, 'expenses/view_reports.html', context)
 
+# @login_required
+# def generate_report_view(request):
+#     if request.method == 'POST':
+#         form = YourReportForm(request.POST)
+#         if form.is_valid():
+#             # Create and save the report instance
+#             report = create_and_save_report_instance(form, request.user)
+
+#             # Generate report data and save to a CSV file
+#             generate_and_save_report_data(report, form, request.user)
+
+#             messages.success(request, 'Report generated successfully.')
+#             return redirect('view_reports')
+#         else:
+#             messages.error(request, 'Error in generating report.')
+#     else:
+#         form = YourReportForm()
+
+#     context = {'form': form}
+#     return render(request, 'expenses/report_form.html', context)
+
+# def generate_expense_report(user, start_date, end_date, categories):
+#     # If categories are selected, filter expenses by those categories.
+#     if categories:
+#         expenses = Expense.objects.filter(
+#             user=user,
+#             date__range=[start_date, end_date],
+#             category__in=categories
+#         )
+#     else:
+#         # If no categories are selected, fetch all expenses for the user in the date range.
+#         expenses = Expense.objects.filter(
+#             user=user,
+#             date__range=[start_date, end_date]
+#         )
+    
+#     print("Number of expenses fetched:", expenses.count())  # Debugging line
+#     return expenses
+
+# def create_and_save_report_instance(form, user):
+#     start_date = form.cleaned_data['start_date']
+#     end_date = form.cleaned_data['end_date']
+#     report = Report(user=user, title=f"Report from {start_date} to {end_date}")
+#     report.save()
+#     return report
+
+# def generate_and_save_report_data(report, form, user):
+#     start_date = form.cleaned_data['start_date']
+#     end_date = form.cleaned_data['end_date']
+#     categories = form.cleaned_data.get('category')  # This will be a queryset
+
+#     # Generate the report data
+#     report_data = generate_expense_report(user, start_date, end_date, categories)
+
+#     # Define CSV file path
+#     csv_file_name = f'report_{user.id}_{start_date}_to_{end_date}.csv'
+#     csv_file_path = os.path.join(settings.MEDIA_ROOT, 'reports', csv_file_name)
+
+#     # Ensure the directory exists
+#     os.makedirs(os.path.dirname(csv_file_path), exist_ok=True)
+
+#     # Write and attach the CSV file to the report
+#     with open(csv_file_path, 'w', newline='') as csvfile, open(csv_file_path, 'rb') as readfile:
+#         writer = csv.writer(csvfile)
+#         headers = ['Title', 'Amount', 'Date', 'Category']
+#         writer.writerow(headers)
+
+#         for expense in report_data['expenses']:
+#             print("Writing expense to CSV:", expense.title, expense.amount, expense.date, expense.category.name)
+#             row = [expense.title, expense.amount, expense.date, expense.category.name]
+#             writer.writerow(row)
+#             #writer.writerow([expense.title, expense.amount, expense.date, expense.category.name])
+
+#         report.report_file.save(csv_file_name, ContentFile(readfile.read()))
+
 @login_required
 def generate_report_view(request):
+    context = {'form': YourReportForm()}
     if request.method == 'POST':
         form = YourReportForm(request.POST)
         if form.is_valid():
-            # Create and save the report instance
             report = create_and_save_report_instance(form, request.user)
 
             # Generate report data and save to a CSV file
@@ -59,6 +135,20 @@ def generate_report_view(request):
     context = {'form': form}
     return render(request, 'expenses/report_form.html', context)
 
+def generate_expense_report(user, start_date, end_date, category_queryset):
+    if category_queryset:
+        expenses = Expense.objects.filter(
+            user=user,
+            date__range=[start_date, end_date],
+            category__in=category_queryset
+        )
+    else:
+        expenses = Expense.objects.filter(
+            user=user,
+            date__range=[start_date, end_date]
+        )
+    return {'expenses': expenses}
+
 def create_and_save_report_instance(form, user):
     start_date = form.cleaned_data['start_date']
     end_date = form.cleaned_data['end_date']
@@ -69,29 +159,30 @@ def create_and_save_report_instance(form, user):
 def generate_and_save_report_data(report, form, user):
     start_date = form.cleaned_data['start_date']
     end_date = form.cleaned_data['end_date']
-    category = form.cleaned_data.get('category')  # optional
 
-    # Generate the report data
-    report_data = generate_expense_report(user, start_date, end_date, category)
+    # Get category queryset from the form's category field
+    category_queryset = form.cleaned_data.get('category')
 
-    # Define CSV file path
+    report_data = generate_expense_report(user, start_date, end_date, category_queryset)
+
     csv_file_name = f'report_{user.id}_{start_date}_to_{end_date}.csv'
     csv_file_path = os.path.join(settings.MEDIA_ROOT, 'reports', csv_file_name)
 
-    # Ensure the directory exists
     os.makedirs(os.path.dirname(csv_file_path), exist_ok=True)
 
-    # Write and attach the CSV file to the report
-    with open(csv_file_path, 'w', newline='') as csvfile, open(csv_file_path, 'rb') as readfile:
+    with open(csv_file_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         headers = ['Title', 'Amount', 'Date', 'Category']
         writer.writerow(headers)
 
         for expense in report_data['expenses']:
-            writer.writerow([expense.title, expense.amount, expense.date, expense.category.name])
+            category_names = ', '.join([cat.name for cat in expense.category.all()])
+            category_names = category_names if category_names else 'No Category'
+            row = [expense.title, expense.amount, expense.date, category_names]
+            writer.writerow(row)
 
-        report.report_file.save(csv_file_name, ContentFile(readfile.read()))
-
+    with open(csv_file_path, 'rb') as f:
+        report.report_file.save(csv_file_name, ContentFile(f.read()))
 
 def edit_profile(request):
     user = request.user
@@ -122,7 +213,11 @@ def register_view(request):
 
 def expense_confirmation(request, expense_id):
     expense = Expense.objects.get(id=expense_id)
-    return render(request, 'expenses/expense_confirmation.html', {'expense': expense})
+    categories = expense.category.all()  # Retrieve all categories associated with the expense
+    return render(request, 'expenses/expense_confirmation.html', {
+        'expense': expense,
+        'categories': categories,  # Add categories to the context
+    })
 
 def profile_view(request):
     user = request.user

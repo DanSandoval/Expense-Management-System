@@ -6,7 +6,7 @@ from django.core.validators import RegexValidator
 class YourReportForm(forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-    categories = forms.ModelMultipleChoiceField(
+    category = forms.ModelMultipleChoiceField(
         queryset=Category.objects.order_by('name').distinct(),
         widget=forms.CheckboxSelectMultiple,  # Or forms.SelectMultiple for a dropdown
         required=False
@@ -36,11 +36,6 @@ class ExpenseForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(ExpenseForm, self).__init__(*args, **kwargs)
-    # def __init__(self, *args, **kwargs):
-    #     #user = kwargs.pop('user', None)
-    #     super(ExpenseForm, self).__init__(*args, **kwargs)
-    #     if user is not None:
-    #         self.fields['category'].queryset = Category.objects.all()
         
 class UserProfileForm(forms.ModelForm):
     # Regular expression for validating phone numbers

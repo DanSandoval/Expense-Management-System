@@ -282,5 +282,5 @@ class RecurringFromAttributeTest(TestCase):
         )
         # The recurring expense should not be included in the report as it starts in the future
         self.assertNotIn(self.expense, report_data['expenses'])        
-        
+
 # Similar tests can be written for UserProfile and Category models

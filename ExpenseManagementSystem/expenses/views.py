@@ -120,6 +120,7 @@ def generate_report_view(request):
     form_submitted = False
     
     if request.method == 'POST' and form.is_valid():
+        form_submitted = True
         report = create_and_save_report_instance(form, request.user)
         generate_and_save_report_data(report, form, request.user)
 

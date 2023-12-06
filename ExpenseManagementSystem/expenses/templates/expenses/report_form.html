@@ -17,39 +17,41 @@
               {% for error in field.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
-            </div>
+            </div> 
           {% endfor %}
           <button type="submit" class="btn btn-primary">Generate Report</button>
         </form>
 
-        {% if expenses %}
-          <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Category</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for expense in expenses %}
+        {% if form_submitted %}
+          {% if expenses %}
+            <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
+            <table class="table">
+              <thead>
                 <tr>
-                  <td>{{ expense.title }}</td>
-                  <td>{{ expense.amount }}</td>
-                  <td>{{ expense.date }}</td>
-                  <td>{% for category in expense.category.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                  <th>Title</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Category</th>
                 </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          <div class="text-right">
-            <strong>Total: </strong> {{ total_expense }}
-          </div>
-        {% elif form.is_bound %}
-          <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
-          <p>No expenses found for this period.</p>
+              </thead>
+              <tbody>
+                {% for expense in expenses %}
+                  <tr>
+                    <td>{{ expense.title }}</td>
+                    <td>{{ expense.amount }}</td>
+                    <td>{{ expense.date }}</td>
+                    <td>{% for category in expense.category.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div class="text-right">
+              <strong>Total: </strong> {{ total_expense }}
+            </div>
+          {% else %}
+            <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
+            <p>No expenses found for this period.</p>
+          {% endif %}
         {% endif %}
       </div>
     </div>

@@ -117,7 +117,8 @@ def view_reports(request):
 @login_required
 def generate_report_view(request):
     form = YourReportForm(request.POST or None)
-
+    form_submitted = False
+    
     if request.method == 'POST' and form.is_valid():
         report = create_and_save_report_instance(form, request.user)
         generate_and_save_report_data(report, form, request.user)
@@ -134,6 +135,7 @@ def generate_report_view(request):
 
         context = {
             'form': form,
+            'form_submitted': form_submitted,
             'expenses': expenses,
             'total_expense': total_expense,
             'start_date': start_date,

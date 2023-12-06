@@ -17,12 +17,12 @@
               {% for error in field.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
-            </div> 
+            </div>
           {% endfor %}
           <button type="submit" class="btn btn-primary">Generate Report</button>
         </form>
 
-        {% if expenses.exists %}
+        {% if expenses %}
           <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
           <table class="table">
             <thead>
@@ -47,7 +47,7 @@
           <div class="text-right">
             <strong>Total: </strong> {{ total_expense }}
           </div>
-        {% else %}
+        {% elif form.is_bound %}
           <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
           <p>No expenses found for this period.</p>
         {% endif %}

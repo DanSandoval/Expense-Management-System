@@ -116,40 +116,38 @@ def view_reports(request):
 
 @login_required
 def generate_report_view(request):
-    if request.method == 'POST':
-        form = YourReportForm(request.POST)
-        if form.is_valid():
-            report = create_and_save_report_instance(form, request.user)
-            generate_and_save_report_data(report, form, request.user)
+    form = YourReportForm(request.POST or None)
 
-            # Fetch report data for display
-            start_date = form.cleaned_data['start_date']
-            end_date = form.cleaned_data['end_date']
-            categories = form.cleaned_data.get('category')
-            report_data = generate_expense_report(request.user, start_date, end_date, categories)
+    if request.method == 'POST' and form.is_valid():
+        report = create_and_save_report_instance(form, request.user)
+        generate_and_save_report_data(report, form, request.user)
 
-            # Extract expenses from the returned dictionary
-            expenses = report_data['expenses']
-            total_expense = sum(expense.amount for expense in expenses)
+        # Fetch report data for display
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+        categories = form.cleaned_data.get('category')
+        report_data = generate_expense_report(request.user, start_date, end_date, categories)
 
-            context = {
-                'form': form,
-                'expenses': expenses,
-                'total_expense': total_expense,
-                'start_date': start_date,
-                'end_date': end_date
-            }
+        # Extract expenses from the returned dictionary
+        expenses = report_data['expenses']
+        total_expense = sum(expense.amount for expense in expenses)
 
-            messages.success(request, 'Report generated successfully.')
-            # Render the same page with report data
-            return render(request, 'expenses/report_form.html', context)
-        else:
-            messages.error(request, 'Error in generating report.')
+        context = {
+            'form': form,
+            'expenses': expenses,
+            'total_expense': total_expense,
+            'start_date': start_date,
+            'end_date': end_date
+        }
+
+        messages.success(request, 'Report generated successfully.')
+        # Render the same page with report data
+        return render(request, 'expenses/report_form.html', context)
+
     else:
-        form = YourReportForm()
-
-    context = {'form': form}
-    return render(request, 'expenses/report_form.html', context)
+        # If not POST or form is not valid, render the page with empty form
+        context = {'form': form}
+        return render(request, 'expenses/report_form.html', context)
 
 def generate_expense_report(user, start_date, end_date, category_queryset):
     if category_queryset:

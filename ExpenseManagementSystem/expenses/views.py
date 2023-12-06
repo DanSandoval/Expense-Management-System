@@ -116,17 +116,33 @@ def view_reports(request):
 
 @login_required
 def generate_report_view(request):
-    context = {'form': YourReportForm()}
     if request.method == 'POST':
         form = YourReportForm(request.POST)
         if form.is_valid():
             report = create_and_save_report_instance(form, request.user)
-
-            # Generate report data and save to a CSV file
             generate_and_save_report_data(report, form, request.user)
 
+            # Fetch report data for display
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            categories = form.cleaned_data.get('category')
+            report_data = generate_expense_report(request.user, start_date, end_date, categories)
+
+            # Extract expenses from the returned dictionary
+            expenses = report_data['expenses']
+            total_expense = sum(expense.amount for expense in expenses)
+
+            context = {
+                'form': form,
+                'expenses': expenses,
+                'total_expense': total_expense,
+                'start_date': start_date,
+                'end_date': end_date
+            }
+
             messages.success(request, 'Report generated successfully.')
-            return redirect('view_reports')
+            # Render the same page with report data
+            return render(request, 'expenses/report_form.html', context)
         else:
             messages.error(request, 'Error in generating report.')
     else:
@@ -146,7 +162,10 @@ def generate_expense_report(user, start_date, end_date, category_queryset):
         expenses = Expense.objects.filter(
             user=user,
             date__range=[start_date, end_date]
-        )
+        ).select_related('category')
+        
+    for expense in expenses:
+        print(expense.title, expense.category) 
     return {'expenses': expenses}
 
 def create_and_save_report_instance(form, user):

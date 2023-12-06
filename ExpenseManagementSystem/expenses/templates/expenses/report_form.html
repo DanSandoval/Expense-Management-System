@@ -1,7 +1,4 @@
-<!-- templates/expenses/report_form.html -->
 {% extends 'base.html' %}
-
-{% load widget_tags %}  <!-- Load the custom filter -->
 
 {% block content %}
   <div class="container mt-4">
@@ -11,31 +8,22 @@
         <form method="post" class="form">
           {% csrf_token %}
           {% for field in form %}
-            <div class="form-group{% if field|widget_class == 'CheckboxSelectMultiple' %} checkboxes{% endif %}">
+            <div class="form-group">
               <label>{{ field.label }}</label>
-              {% if field|widget_class == 'CheckboxSelectMultiple' %}
-                {% for choice in field %}
-                  <div class="form-check">
-                    {{ choice.tag }}
-                    <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label>
-                  </div>
-                {% endfor %}
-              {% else %}
-                {{ field }}
-              {% endif %}
+              {{ field }}
               {% if field.help_text %}
                 <small class="form-text text-muted">{{ field.help_text }}</small>
               {% endif %}
               {% for error in field.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
-            </div>
+            </div> 
           {% endfor %}
           <button type="submit" class="btn btn-primary">Generate Report</button>
         </form>
 
-        {% if expenses %}
-          <h3 class="mt-4">Expense Report</h3>
+        {% if expenses.exists %}
+          <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
           <table class="table">
             <thead>
               <tr>
@@ -51,7 +39,7 @@
                   <td>{{ expense.title }}</td>
                   <td>{{ expense.amount }}</td>
                   <td>{{ expense.date }}</td>
-                  <td>{{ expense.category.name }}</td>
+                  <td>{% for category in expense.category.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
                 </tr>
               {% endfor %}
             </tbody>
@@ -59,6 +47,9 @@
           <div class="text-right">
             <strong>Total: </strong> {{ total_expense }}
           </div>
+        {% else %}
+          <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
+          <p>No expenses found for this period.</p>
         {% endif %}
       </div>
     </div>

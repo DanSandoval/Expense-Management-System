@@ -1,59 +1,113 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="container mt-4">
-    <h2 class="mb-3">Generate Expense Report</h2>
-    <div class="card">
-      <div class="card-body">
-        <form method="post" class="form">
-          {% csrf_token %}
-          {% for field in form %}
-            <div class="form-group">
-              <label>{{ field.label }}</label>
-              {{ field }}
-              {% if field.help_text %}
-                <small class="form-text text-muted">{{ field.help_text }}</small>
-              {% endif %}
-              {% for error in field.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
-              {% endfor %}
-            </div> 
-          {% endfor %}
-          <button type="submit" class="btn btn-primary">Generate Report</button>
-        </form>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
 
-        {% if form_submitted %}
-          {% if expenses %}
-            <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                  <th>Category</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for expense in expenses %}
+<div class="container mt-4">
+  <h2 class="mb-3">Generate Expense Report</h2>
+  <div class="card">
+    <div class="card-body">
+      <form method="post" class="form">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="form-group">
+            {{ field.label_tag }} <!-- Generates the label tag with the correct 'for' attribute for each field -->
+            {{ field }} <!-- This renders the field -->
+            {% if field.help_text %}
+              <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
+            {% for error in field.errors %}
+              <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+      </form>
+
+      {% if form_submitted %}
+        <div class="row mt-4">
+          <!-- Chart Column -->
+          <div class="col-md-6">
+            {% if bubble_data %}
+              <canvas id="expenseChart" width="400" height="400"></canvas>
+            {% endif %}
+          </div>
+
+          <!-- Report and Total Column -->
+          <div class="col-md-6">
+            {% if expenses %}
+              <h3>Expense Report from {{ start_date }} to {{ end_date }}</h3>
+              <table class="table">
+                <thead>
                   <tr>
-                    <td>{{ expense.title }}</td>
-                    <td>{{ expense.amount }}</td>
-                    <td>{{ expense.date }}</td>
-                    <td>{% for category in expense.category.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                    <th>Title</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Category</th>
                   </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            <div class="text-right">
-              <strong>Total: </strong> {{ total_expense }}
-            </div>
-          {% else %}
-            <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
-            <p>No expenses found for this period.</p>
-          {% endif %}
-        {% endif %}
-      </div>
+                </thead>
+                <tbody>
+                  {% for expense in expenses %}
+                    <tr>
+                      <td>{{ expense.title }}</td>
+                      <td>{{ expense.amount }}</td>
+                      <td>{{ expense.date }}</td>
+                      <td>
+                        {% for category in expense.category.all %}
+                          {{ category.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <div class="text-right">
+                <strong>Total: </strong> {{ total_expense }}
+              </div>
+            {% else %}
+              <h3>Expense Report from {{ start_date }} to {{ end_date }}</h3>
+              <p>No expenses found for this period.</p>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
     </div>
   </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    {% if bubble_data %}
+      var ctx = document.getElementById('expenseChart').getContext('2d');
+      var bubbleData = {{ bubble_data|safe }};
+
+      var myChart = new Chart(ctx, {
+        type: 'bubble',
+        data: bubbleData,
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            },
+            x: {
+              type: 'time',
+              time: {
+                unit: 'day'
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              mode: 'point'
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    {% endif %}
+  });
+</script>
 {% endblock %}

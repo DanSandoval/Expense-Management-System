@@ -10,6 +10,7 @@ import os
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
 
 # Import other necessary modules
 
@@ -134,23 +135,132 @@ def generate_report_view(request):
         expenses = report_data['expenses']
         total_expense = sum(expense.amount for expense in expenses)
 
+		# Prepare data for the chart
+        date_category_counts = {}
+
+        for expense in expenses:
+            date_str = expense.date.strftime("%Y-%m-%d")
+            if date_str not in date_category_counts:
+                date_category_counts[date_str] = set()
+            date_category_counts[date_str].update(cat.name for cat in expense.category.all())
+
+        bubble_data = {
+            'datasets': [{
+                'label': 'Expenses',
+                'data': [
+                    {
+                        'x': expense.date.strftime("%Y-%m-%d"),
+                		'y': float(expense.amount),
+                		'r': len(date_category_counts[expense.date.strftime("%Y-%m-%d")]) * 5,
+                        'expenseTitle': expense.title,
+                        'amount': float(expense.amount),
+                        'categories': ', '.join([cat.name for cat in expense.category.all()])
+            		}
+            		for expense in expenses
+				],
+                'backgroundColor': 'rgba(0, 123, 255, 0.5)',
+				'hoverBackgroundColor': '(0, 123, 255, 1)',
+			}]
+		}
+
         context = {
             'form': form,
             'form_submitted': form_submitted,
             'expenses': expenses,
             'total_expense': total_expense,
             'start_date': start_date,
-            'end_date': end_date
+            'end_date': end_date,
+            'bubble_data': bubble_data  # Add bubble chart data to the context
         }
 
-        messages.success(request, 'Report generated successfully.')
-        # Render the same page with report data
+        return render(request, 'expenses/report_form.html', context)
+    else:
+        context = {'form': form, 'form_submitted': form_submitted}
         return render(request, 'expenses/report_form.html', context)
 
-    else:
-        # If not POST or form is not valid, render the page with empty form
-        context = {'form': form}
-        return render(request, 'expenses/report_form.html', context)
+
+# @login_required
+# def generate_report_view(request):
+#     form = YourReportForm(request.POST or None)
+#     form_submitted = False
+    
+#     if request.method == 'POST' and form.is_valid():
+#         form_submitted = True
+#         report = create_and_save_report_instance(form, request.user)
+#         generate_and_save_report_data(report, form, request.user)
+
+#         # Fetch report data for display
+#         start_date = form.cleaned_data['start_date']
+#         end_date = form.cleaned_data['end_date']
+#         categories = form.cleaned_data.get('category')
+#         report_data = generate_expense_report(request.user, start_date, end_date, categories)
+
+#         # Extract expenses from the returned dictionary
+#         expenses = report_data['expenses']
+#         total_expense = sum(expense.amount for expense in expenses)
+
+#         # Prepare data for the chart
+#         category_totals = expenses.values('category__name').annotate(total=Sum('amount')).order_by('-total')
+
+#         chart_data = {
+#             'categories': [item['category__name'] for item in category_totals],
+#             'totals': [float(item['total']) for item in category_totals]  # Convert to float
+#         }
+
+#         context = {
+#             'form': form,
+#             'form_submitted': form_submitted,
+#             'expenses': expenses,
+#             'total_expense': total_expense,
+#             'start_date': start_date,
+#             'end_date': end_date,
+#             'chart_data': chart_data  # Add chart data to the context
+#         }
+
+#         messages.success(request, 'Report generated successfully.')
+#         return render(request, 'expenses/report_form.html', context)
+
+#     else:
+#         context = {'form': form, 'form_submitted': form_submitted}
+#         return render(request, 'expenses/report_form.html', context)
+    
+#     @login_required
+# def generate_report_view(request):
+#     form = YourReportForm(request.POST or None)
+#     form_submitted = False
+    
+#     if request.method == 'POST' and form.is_valid():
+#         form_submitted = True
+#         report = create_and_save_report_instance(form, request.user)
+#         generate_and_save_report_data(report, form, request.user)
+
+#         # Fetch report data for display
+#         start_date = form.cleaned_data['start_date']
+#         end_date = form.cleaned_data['end_date']
+#         categories = form.cleaned_data.get('category')
+#         report_data = generate_expense_report(request.user, start_date, end_date, categories)
+
+#         # Extract expenses from the returned dictionary
+#         expenses = report_data['expenses']
+#         total_expense = sum(expense.amount for expense in expenses)
+
+#         context = {
+#             'form': form,
+#             'form_submitted': form_submitted,
+#             'expenses': expenses,
+#             'total_expense': total_expense,
+#             'start_date': start_date,
+#             'end_date': end_date
+#         }
+
+#         messages.success(request, 'Report generated successfully.')
+#         # Render the same page with report data
+#         return render(request, 'expenses/report_form.html', context)
+
+    # else:
+    #     # If not POST or form is not valid, render the page with empty form
+    #     context = {'form': form}
+    #     return render(request, 'expenses/report_form.html', context)
 
 def generate_expense_report(user, start_date, end_date, category_queryset):
     if category_queryset:

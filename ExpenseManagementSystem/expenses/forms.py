@@ -8,32 +8,24 @@ class YourReportForm(forms.Form):
     end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     category = forms.ModelMultipleChoiceField(
         queryset=Category.objects.order_by('name').distinct(),
-        widget=forms.CheckboxSelectMultiple,  # Or forms.SelectMultiple for a dropdown
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'horizontal-select'}),
         required=False
     )
     
 class ExpenseForm(forms.ModelForm):
-    
-    category = forms.ModelMultipleChoiceField(
+    category = forms.ModelChoiceField(
         queryset=Category.objects.all(),
-        widget=forms.CheckboxSelectMultiple(),
+        widget=forms.Select(),  # You can choose a different widget if you prefer
         required=False
     )
-    is_recurring = forms.BooleanField(required=False, label="Recurring Expense?")
-    frequency = forms.ChoiceField(choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], required=False)
-    recurring_from = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
     class Meta:
         model = Expense
-        fields = ['title', 'amount', 'date', 'category', 'is_recurring', 'frequency']
+        fields = ['title', 'amount', 'date', 'category']
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'recurring_from': forms.DateInput(attrs={'type': 'date'}),
-            'categories': forms.CheckboxSelectMultiple(),
-            }
-        labels = {
-            'recurring_from': 'First Recurrence Date',  # Update the label here
+            'date': forms.DateInput(attrs={'type': 'date'})
         }
-    
+
     def __init__(self, *args, **kwargs):
         super(ExpenseForm, self).__init__(*args, **kwargs)
         

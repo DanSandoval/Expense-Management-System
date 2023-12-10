@@ -1,14 +1,5 @@
 {% extends 'base.html' %}
 
-{% block style %}
-<style>
-  .horizontal-checkboxes .form-check {
-    display: inline-block;
-    margin-right: 10px;
-  }
-</style>
-{% endblock %}
-
 {% block content %}
   <div class="container mt-4">
     <h2 class="mb-3">Add Expense</h2>
@@ -17,150 +8,20 @@
         <form method="post" class="form">
           {% csrf_token %}
           {% for field in form %}
-            {% if field.name == 'frequency' or field.name == 'recurring_from' %}
-              <div class="form-group d-none" id="id_{{ field.name }}_container">
-                {% if field.name == 'recurring_from' %}
-                  <label for="{{ field.id_for_label }}">First Recurrence Date</label>
-                {% else %}
-                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {% endif %}
-                {{ field }}
-                {% if field.help_text %}
-                  <small class="form-text text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                  <div class="alert alert-danger">{{ error }}</div>
-                {% endfor %}
-              </div>
-            {% elif field.name == 'is_recurring' %}
-              <!-- Hiding the 'Recurring Charge' checkbox -->
-              <div class="form-group d-none">
-                {{ field }}
-              </div>
-            {% else %}
-            <div class="form-group" {% if field.name == 'category' %}class="horizontal-checkboxes"{% endif %}>
+            <div class="form-group">
               <label for="{{ field.id_for_label }}">{{ field.label }}</label>
               {{ field }}
-                {% if field.help_text %}
-                  <small class="form-text text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                  <div class="alert alert-danger">{{ error }}</div>
-                {% endfor %}
-              </div>
-            {% endif %}
+              {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text }}</small>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
           {% endfor %}
           <button type="submit" class="btn btn-primary">Save</button>
         </form>
       </div>
     </div>
   </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const isRecurringCheckbox = document.getElementById('id_is_recurring');
-      const frequencyContainer = document.getElementById('id_frequency_container');
-      const recurringFromContainer = document.getElementById('id_recurring_from_container');
-
-      function toggleFields() {
-        if (isRecurringCheckbox.checked) {
-          frequencyContainer.classList.remove('d-none');
-          recurringFromContainer.classList.remove('d-none');
-        } else {
-          frequencyContainer.classList.add('d-none');
-          recurringFromContainer.classList.add('d-none');
-        }
-      }
-
-      // Initial check
-      toggleFields();
-
-      // Add event listener
-      isRecurringCheckbox.addEventListener('change', toggleFields);
-    });
-  </script>
 {% endblock %}
-
-
-{% comment %} {% extends 'base.html' %}
-
-{% block style %}
-<style>
-  .horizontal-checkboxes .form-check {
-    display: inline-block;
-    margin-right: 10px;
-  }
-</style>
-{% endblock %}
-
-{% block content %}
-  <div class="container mt-4">
-    <h2 class="mb-3">Add Expense</h2>
-    <div class="card">
-      <div class="card-body">
-        <form method="post" class="form">
-          {% csrf_token %}
-          {% for field in form %}
-            {% if field.name == 'frequency' or field.name == 'recurring_from' %}
-              <div class="form-group d-none" id="id_{{ field.name }}_container">
-                {% if field.name == 'recurring_from' %}
-                  <label for="{{ field.id_for_label }}">First Recurrence Date</label>
-                {% else %}
-                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {% endif %}
-                {{ field }}
-                {% if field.help_text %}
-                  <small class="form-text text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                  <div class="alert alert-danger">{{ error }}</div>
-                {% endfor %}
-              </div>
-            {% elif field.name == 'is_recurring' %}
-              <!-- Hiding the 'Recurring Charge' checkbox -->
-              <div class="form-group d-none">
-                {{ field }}
-              </div>
-            {% else %}
-            <div class="form-group" {% if field.name == 'category' %}class="horizontal-checkboxes"{% endif %}>
-              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-              {{ field }}
-                {% if field.help_text %}
-                  <small class="form-text text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                  <div class="alert alert-danger">{{ error }}</div>
-                {% endfor %}
-              </div>
-            {% endif %}
-          {% endfor %}
-          <button type="submit" class="btn btn-primary">Save</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const isRecurringCheckbox = document.getElementById('id_is_recurring');
-      const frequencyContainer = document.getElementById('id_frequency_container');
-      const recurringFromContainer = document.getElementById('id_recurring_from_container');
-
-      function toggleFields() {
-        if (isRecurringCheckbox.checked) {
-          frequencyContainer.classList.remove('d-none');
-          recurringFromContainer.classList.remove('d-none');
-        } else {
-          frequencyContainer.classList.add('d-none');
-          recurringFromContainer.classList.add('d-none');
-        }
-      }
-
-      // Initial check
-      toggleFields();
-
-      // Add event listener
-      isRecurringCheckbox.addEventListener('change', toggleFields);
-    });
-  </script>
-{% endblock %} {% endcomment %}

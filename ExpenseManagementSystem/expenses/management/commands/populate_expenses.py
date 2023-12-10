@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from expenses.models import Expense, Category, RecurringExpense
+from expenses.models import Expense, Category
 from faker import Faker
 import random
 import datetime
@@ -23,9 +23,8 @@ class Command(BaseCommand):
             amount = round(random.uniform(10.00, 500.00), 2)
             date = fake.date_between(start_date='-2y', end_date='today')
             user = random.choice(users)
+            category = random.choice(categories)
 
-            expense = Expense.objects.create(title=title, amount=amount, date=date, user=user)
-            expense_categories = random.sample(categories, random.randint(1, len(categories)))
-            expense.category.set(expense_categories)
+            expense = Expense.objects.create(title=title, amount=amount, date=date, user=user, category=category)
 
         self.stdout.write(self.style.SUCCESS(f'Successfully populated {num_entries} expense entries'))

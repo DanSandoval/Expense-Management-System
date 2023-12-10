@@ -2,15 +2,14 @@ from django.contrib import admin
 from .models import Expense, Category, Budget, UserProfile, Report
 
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'amount', 'date', 'display_categories', 'user')
-    list_filter = ('date', 'category', 'user')
+    list_display = ('title', 'amount', 'date', 'display_category', 'user')  # Changed to display_category
+    list_filter = ('date', 'category', 'user')  # category remains unchanged if it's now a ForeignKey
     search_fields = ('title', 'category__name', 'user__username')
 
-    def display_categories(self, obj):
-        # Fetching categories related to this specific expense
-        Category = obj.category.all()  # This fetches categories related to the specific expense
-        return ", ".join([cat.name for cat in obj.category.all()])
-    display_categories.short_description = 'Categories'
+    def display_category(self, obj):
+        # Display the category of this specific expense
+        return obj.category.name if obj.category else "No Category"
+    display_category.short_description = 'Category'  # Changed to singular
 
 admin.site.register(Expense, ExpenseAdmin)
 admin.site.register(Category)

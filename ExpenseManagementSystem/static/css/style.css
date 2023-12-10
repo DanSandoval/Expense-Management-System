@@ -26,3 +26,9 @@
     width: 73.73px; /* Size of the GitHub icon */
     height: 18px;
   }
+
+  .form-group.horizontal-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}

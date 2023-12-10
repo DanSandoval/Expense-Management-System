@@ -1,5 +1,23 @@
 {% extends 'base.html' %}
 
+{% block style %}
+<style>
+  .horizontal-select {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px; /* Adjust the space between items */
+  }
+  .horizontal-select label {
+      margin-right: 5px; /* Space between label and checkbox */
+      display: flex;
+      align-items: center; /* Center align the checkbox and label vertically */
+  }
+  .horizontal-select input[type="checkbox"] {
+      margin-right: 5px; /* Adjust space between checkboxes */
+  }
+</style>
+{% endblock %}
+
 {% block content %}
   <div class="container mt-4">
     <h2 class="mb-3">Generate Expense Report</h2>
@@ -8,7 +26,7 @@
         <form method="post" class="form">
           {% csrf_token %}
           {% for field in form %}
-            <div class="form-group">
+            <div class="form-group {% if field.name == 'category' %}horizontal-select{% endif %}">
               <label>{{ field.label }}</label>
               {{ field }}
               {% if field.help_text %}
@@ -17,7 +35,7 @@
               {% for error in field.errors %}
                 <div class="alert alert-danger">{{ error }}</div>
               {% endfor %}
-            </div> 
+            </div>
           {% endfor %}
           <button type="submit" class="btn btn-primary">Generate Report</button>
         </form>
@@ -40,7 +58,7 @@
                     <td>{{ expense.title }}</td>
                     <td>{{ expense.amount }}</td>
                     <td>{{ expense.date }}</td>
-                    <td>{% for category in expense.category.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                    <td>{{ expense.category.name }}</td>
                   </tr>
                 {% endfor %}
               </tbody>

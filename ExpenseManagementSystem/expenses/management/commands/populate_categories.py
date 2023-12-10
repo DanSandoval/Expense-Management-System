@@ -7,8 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         categories = ['Food', 'Travel', 'Utilities', 'Entertainment', 'Other']  # Add your categories here
-        for user in User.objects.all():
-            for cat_name in categories:
-                Category.objects.get_or_create(name=cat_name, user=user)
+        for cat_name in categories:
+            Category.objects.get_or_create(name=cat_name)
      
         self.stdout.write(self.style.SUCCESS('Successfully populated categories'))

@@ -2,6 +2,12 @@ from django.db import models
 from django.contrib.auth.models import User
 import uuid
 
+def default_category():
+    # Ensure there's at least one category and return its ID
+    category, created = Category.objects.get_or_create(
+        name="Default", defaults={'description': 'Auto-generated default category'})
+    return category.id
+
 # Create your models here.
 class UserProfiles(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -26,7 +32,7 @@ class Expense(models.Model):
     title = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
-    category = models.ManyToManyField(Category)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     
     def __str__(self):

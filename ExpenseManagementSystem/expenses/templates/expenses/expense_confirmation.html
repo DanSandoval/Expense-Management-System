@@ -11,7 +11,7 @@
             <p>Title: {{ expense.title }}</p>
             <p>Amount: {{ expense.amount }}</p>
             <p>Date: {{ expense.date }}</p>
-            <p>Categories: {% for category in categories %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+            <p>Category: {{ expense.category.name }}</p> <!-- Updated to show a single category -->
             <!-- Add more fields as necessary -->
         </div>
     </div>

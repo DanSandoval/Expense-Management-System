@@ -18,10 +18,17 @@
     #chart-options-container {
         display: none;
     }
+    #donutChartContainer {
+      width: 400px;
+      height: 400px;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
   <div class="container mt-4">
     <h2 class="mb-3">Generate Expense Report</h2>
     <div class="card">
@@ -80,6 +87,11 @@
           <div class="text-right">
             <strong>Total: </strong> {{ total_expense }}
           </div>
+          
+          <!-- Donut Chart Container -->
+          <div id="donutChartContainer">
+            <canvas id="donutChart"></canvas>
+          </div>
 
           <div class="alert alert-success mt-4">
             Report saved under <a href="{% url 'view_reports' %}">Existing Reports</a>.
@@ -118,6 +130,32 @@
       categoryCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', updateChartOptionsVisibility);
       });
+      // Initialize the Donut Chart
+      var ctx = document.getElementById('donutChart').getContext('2d');
+      var myDonutChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Category 1', 'Category 2', 'Category 3'],
+          datasets: [{
+            data: [10, 20, 30], // Example data
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(54, 162, 235, 0.2)',
+              'rgba(255, 206, 86, 0.2)'
+            ],
+            borderColor: [
+              'rgba(255, 99, 132, 1)',
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 206, 86, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
     });
   </script>
-{% endblock %}
+  {% endblock %}

@@ -131,31 +131,19 @@
         checkbox.addEventListener('change', updateChartOptionsVisibility);
       });
       // Initialize the Donut Chart
+      {% if donut_chart_data %}
       var ctx = document.getElementById('donutChart').getContext('2d');
+      var chartData = JSON.parse('{{ donut_chart_data|safe }}');  // Get the donut chart data from the Django context
+
       var myDonutChart = new Chart(ctx, {
         type: 'doughnut',
-        data: {
-          labels: ['Category 1', 'Category 2', 'Category 3'],
-          datasets: [{
-            data: [10, 20, 30], // Example data
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)',
-              'rgba(54, 162, 235, 0.2)',
-              'rgba(255, 206, 86, 0.2)'
-            ],
-            borderColor: [
-              'rgba(255, 99, 132, 1)',
-              'rgba(54, 162, 235, 1)',
-              'rgba(255, 206, 86, 1)'
-            ],
-            borderWidth: 1
-          }]
-        },
+        data: chartData,  // Use the chart data directly
         options: {
           responsive: true,
           maintainAspectRatio: false
         }
       });
-    });
-  </script>
+    {% endif %}
+  });
+</script>
   {% endblock %}

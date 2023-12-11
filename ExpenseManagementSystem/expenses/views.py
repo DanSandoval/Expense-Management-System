@@ -10,6 +10,9 @@ import os
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from django.core.serializers.json import DjangoJSONEncoder
+import json
 
 def home(request):
     return render(request, 'expenses/home.html')
@@ -37,6 +40,7 @@ def view_reports(request):
 def generate_report_view(request):
     form = YourReportForm(request.POST or None)
     form_submitted = False
+    donut_chart_data = None  # Initialize the variable for donut chart data
     
     if request.method == 'POST' and form.is_valid():
         form_submitted = True
@@ -51,20 +55,36 @@ def generate_report_view(request):
         expenses = report_data['expenses']
         total_expense = sum(expense.amount for expense in expenses)
 
+        if category_queryset:
+            donut_chart_data = generate_donut_chart_data(expenses)
+
         context = {
             'form': form,
             'form_submitted': form_submitted,
             'expenses': expenses,
             'total_expense': total_expense,
             'start_date': start_date,
-            'end_date': end_date
+            'end_date': end_date,
+            'donut_chart_data': donut_chart_data
         }
 
         messages.success(request, 'Report generated successfully.')
         return render(request, 'expenses/report_form.html', context)
+
     else:
         context = {'form': form}
         return render(request, 'expenses/report_form.html', context)
+    
+def generate_donut_chart_data(expenses):
+    category_totals = expenses.values('category__name').annotate(total=Sum('amount'))
+    labels = [category['category__name'] for category in category_totals]
+    data = [category['total'] for category in category_totals]
+
+    donut_chart_data = {
+        'labels': labels,
+        'datasets': [{'data': data, 'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56']}]
+    }
+    return json.dumps(donut_chart_data, cls=DjangoJSONEncoder)
 
 def generate_expense_report(user, start_date, end_date, category_queryset):
     if category_queryset:
@@ -103,6 +123,34 @@ def generate_and_save_report_data(report, form, user):
 
     with open(csv_file_path, 'rb') as f:
         report.report_file.save(csv_file_name, ContentFile(f.read()))
+
+def generate_donut_chart(request):
+    if request.method == 'POST':
+        form = YourReportForm(request.POST)
+        if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+            selected_categories = form.cleaned_data['category']
+
+            # Filter expenses based on date range and selected categories
+            expenses = Expense.objects.filter(
+                date__range=(start_date, end_date),
+                category__in=selected_categories
+            )
+
+            # Calculate total expenses for each category
+            category_totals = expenses.values('category__name').annotate(total=Sum('amount'))
+
+            # Prepare data for the donut chart
+            labels = [category['category__name'] for category in category_totals]
+            data = [category['total'] for category in category_totals]
+
+            return render(request, 'your_template.html', {'labels': labels, 'data': data})
+
+    else:
+        form = YourReportForm()
+
+    return render(request, 'your_template.html', {'form': form})        
 
 def edit_profile(request):
     user = request.user

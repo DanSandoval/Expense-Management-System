@@ -2,19 +2,22 @@
 
 {% block style %}
 <style>
-  .horizontal-select {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px; /* Adjust the space between items */
-  }
-  .horizontal-select label {
-      margin-right: 5px; /* Space between label and checkbox */
-      display: flex;
-      align-items: center; /* Center align the checkbox and label vertically */
-  }
-  .horizontal-select input[type="checkbox"] {
-      margin-right: 5px; /* Adjust space between checkboxes */
-  }
+    .horizontal-select {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .horizontal-select label {
+        margin-right: 5px;
+        display: flex;
+        align-items: center;
+    }
+    .horizontal-select input[type="checkbox"] {
+        margin-right: 5px;
+    }
+    #chart-options-container {
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -26,52 +29,95 @@
         <form method="post" class="form">
           {% csrf_token %}
           {% for field in form %}
-            <div class="form-group {% if field.name == 'category' %}horizontal-select{% endif %}">
-              <label>{{ field.label }}</label>
-              {{ field }}
-              {% if field.help_text %}
-                <small class="form-text text-muted">{{ field.help_text }}</small>
-              {% endif %}
-              {% for error in field.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
-              {% endfor %}
-            </div>
+            {% if field.name != 'chart_options' %}
+              <div class="form-group {% if field.name == 'category' %}horizontal-select{% endif %}">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
           {% endfor %}
+
+          <!-- Chart Options Section, controlled by JavaScript -->
+          <div id="chart-options-container">
+            <div class="form-group">
+              <label id="chart-options-label" style="display: none;">Category Expense Comparison</label>
+              <div id="chart-options-dropdown-placeholder"></div>
+            </div>
+          </div>
+
           <button type="submit" class="btn btn-primary">Generate Report</button>
         </form>
 
         {% if form_submitted %}
           {% if expenses %}
-            <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
-            <table class="table">
-              <thead>
+          <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Category</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for expense in expenses %}
                 <tr>
-                  <th>Title</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                  <th>Category</th>
+                  <td>{{ expense.title }}</td>
+                  <td>{{ expense.amount }}</td>
+                  <td>{{ expense.date }}</td>
+                  <td>{{ expense.category.name }}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {% for expense in expenses %}
-                  <tr>
-                    <td>{{ expense.title }}</td>
-                    <td>{{ expense.amount }}</td>
-                    <td>{{ expense.date }}</td>
-                    <td>{{ expense.category.name }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            <div class="text-right">
-              <strong>Total: </strong> {{ total_expense }}
-            </div>
-          {% else %}
-            <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
-            <p>No expenses found for this period.</p>
-          {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="text-right">
+            <strong>Total: </strong> {{ total_expense }}
+          </div>
+
+          <div class="alert alert-success mt-4">
+            Report saved under <a href="{% url 'view_reports' %}">Existing Reports</a>.
+          </div>
+        {% else %}
+          <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
+          <p>No expenses found for this period.</p>
         {% endif %}
-      </div>
+      {% endif %}
     </div>
   </div>
+</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const categoryCheckboxes = document.querySelectorAll('input[name="category"]');
+      const chartOptionsContainer = document.getElementById('chart-options-container');
+      const chartOptionsLabel = document.getElementById('chart-options-label');
+      const chartOptionsDropdownPlaceholder = document.getElementById('chart-options-dropdown-placeholder');
+
+      function updateChartOptionsVisibility() {
+        const selectedCategories = [...categoryCheckboxes].filter(checkbox => checkbox.checked).length;
+        if (selectedCategories > 1) {
+          chartOptionsLabel.style.display = 'block';
+          chartOptionsDropdownPlaceholder.innerHTML = `{{ form.chart_options }}`;
+          chartOptionsContainer.style.display = 'block';
+        } else {
+          chartOptionsLabel.style.display = 'none';
+          chartOptionsDropdownPlaceholder.innerHTML = '';
+          chartOptionsContainer.style.display = 'none';
+        }
+      }
+
+      updateChartOptionsVisibility();
+
+      categoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateChartOptionsVisibility);
+      });
+    });
+  </script>
 {% endblock %}

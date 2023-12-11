@@ -12,6 +12,17 @@ class YourReportForm(forms.Form):
         required=False
     )
     
+    chart_options = forms.ChoiceField(
+        choices=[
+            ('line_chart', 'Line Chart'),
+            ('donut_chart', 'Donut Chart'),
+            ('polar_area_chart', 'Polar Area Chart'),
+        ],
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False,
+        initial='',
+    )
+    
 class ExpenseForm(forms.ModelForm):
     category = forms.ModelChoiceField(
         queryset=Category.objects.all(),

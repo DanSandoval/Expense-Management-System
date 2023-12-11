@@ -10,9 +10,10 @@ import os
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
+from django.db.models import Sum, F, functions as Func
 from django.core.serializers.json import DjangoJSONEncoder
-import json
+import json, calendar
+from collections import defaultdict
 
 def home(request):
     return render(request, 'expenses/home.html')
@@ -40,8 +41,7 @@ def view_reports(request):
 def generate_report_view(request):
     form = YourReportForm(request.POST or None)
     form_submitted = False
-    donut_chart_data = None  # Initialize the variable for donut chart data
-    
+
     if request.method == 'POST' and form.is_valid():
         form_submitted = True
         report = create_and_save_report_instance(form, request.user)
@@ -58,6 +58,10 @@ def generate_report_view(request):
         if category_queryset:
             donut_chart_data = generate_donut_chart_data(expenses)
 
+            # Aggregate and format data for the line chart
+            expenses_by_month = aggregate_expenses_by_month(expenses, start_date, end_date)
+            line_chart_data = format_data_for_chart(expenses_by_month, start_date, end_date)
+
         context = {
             'form': form,
             'form_submitted': form_submitted,
@@ -65,7 +69,8 @@ def generate_report_view(request):
             'total_expense': total_expense,
             'start_date': start_date,
             'end_date': end_date,
-            'donut_chart_data': donut_chart_data
+            'donut_chart_data': donut_chart_data,
+            'line_chart_data': json.dumps(line_chart_data, cls=DjangoJSONEncoder) if line_chart_data else None
         }
 
         messages.success(request, 'Report generated successfully.')
@@ -74,6 +79,54 @@ def generate_report_view(request):
     else:
         context = {'form': form}
         return render(request, 'expenses/report_form.html', context)
+
+    
+def format_data_for_chart(expenses_aggregated, start_date, end_date):
+    # Generate month labels
+    labels = []
+    for year in range(start_date.year, end_date.year + 1):
+        start_month = start_date.month if year == start_date.year else 1
+        end_month = end_date.month if year == end_date.year else 12
+        for month in range(start_month, end_month + 1):
+            labels.append(f"{calendar.month_name[month]} {year}")
+
+    # Initialize a dictionary to hold expense data for each category
+    category_data = defaultdict(lambda: [0] * len(labels))
+
+    # Populate the category data
+    for expense in expenses_aggregated:
+        # Calculate the index in labels array
+        month_label = f"{calendar.month_name[expense['month']]} {expense['year']}"
+        if month_label in labels:
+            index = labels.index(month_label)
+            category_data[expense['category__name']][index] = expense['total']
+
+    # Create datasets for Chart.js
+    datasets = []
+    for category, data in category_data.items():
+        dataset = {
+            'label': category,
+            'data': data,
+            'borderColor': get_random_color(),  # Define a function to get a random color
+            'fill': False
+        }
+        datasets.append(dataset)
+
+    return {'labels': labels, 'datasets': datasets}
+
+def get_random_color():
+    # Function to generate a random color
+    import random
+    r = lambda: random.randint(0,255)
+    return f'rgba({r()}, {r()}, {r()}, 1)'
+    
+def aggregate_expenses_by_month(expenses, start_date, end_date):
+    expenses = expenses.annotate(
+        month=Func.ExtractMonth('date'),
+        year=Func.ExtractYear('date')
+    ).values('month', 'year', 'category__name').annotate(total=Sum('amount')).order_by('year', 'month')
+
+    return expenses
     
 def generate_donut_chart_data(expenses):
     category_totals = expenses.values('category__name').annotate(total=Sum('amount'))

@@ -22,6 +22,10 @@
       width: 400px;
       height: 400px;
     }
+    #lineChartContainer {
+      width: 600px;
+      height: 400px;
+    }
 </style>
 {% endblock %}
 
@@ -92,6 +96,9 @@
           <div id="donutChartContainer">
             <canvas id="donutChart"></canvas>
           </div>
+          <div id="lineChartContainer">
+            <canvas id="lineChart"></canvas>
+          </div>
 
           <div class="alert alert-success mt-4">
             Report saved under <a href="{% url 'view_reports' %}">Existing Reports</a>.
@@ -143,7 +150,26 @@
           maintainAspectRatio: false
         }
       });
+      {% endif %}
+
+      // Initialize the Line Chart
+      {% if line_chart_data %}
+    var lineCtx = document.getElementById('lineChart').getContext('2d');
+    var lineChartData = JSON.parse('{{ line_chart_data|safe }}');
+    var myLineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: lineChartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
     {% endif %}
   });
 </script>
-  {% endblock %}
+{% endblock %}

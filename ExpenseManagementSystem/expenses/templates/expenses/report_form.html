@@ -2,30 +2,34 @@
 
 {% block style %}
 <style>
-    .horizontal-select {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .horizontal-select label {
-        margin-right: 5px;
-        display: flex;
-        align-items: center;
-    }
-    .horizontal-select input[type="checkbox"] {
-        margin-right: 5px;
-    }
-    #chart-options-container {
-        display: none;
-    }
-    #donutChartContainer {
-      width: 400px;
-      height: 400px;
-    }
-    #lineChartContainer {
-      width: 600px;
-      height: 400px;
-    }
+		.horizontal-select {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+		}
+		.horizontal-select label {
+				margin-right: 5px;
+				display: flex;
+				align-items: center;
+		}
+		.horizontal-select input[type="checkbox"] {
+				margin-right: 5px;
+		}
+		#chart-options-container {
+				display: none;
+		}
+		#donutChartContainer {
+			width: 400px;
+			height: 400px;
+		}
+		#lineChartContainer {
+			width: 600px;
+			height: 400px;
+		}
+		#polarAreaChartContainer {
+			width: 400px;
+			height: 400px;
+		}
 </style>
 {% endblock %}
 
@@ -33,143 +37,162 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/moment"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
-  <div class="container mt-4">
-    <h2 class="mb-3">Generate Expense Report</h2>
-    <div class="card">
-      <div class="card-body">
-        <form method="post" class="form">
-          {% csrf_token %}
-          {% for field in form %}
-            {% if field.name != 'chart_options' %}
-              <div class="form-group {% if field.name == 'category' %}horizontal-select{% endif %}">
-                <label>{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}
-                  <small class="form-text text-muted">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                  <div class="alert alert-danger">{{ error }}</div>
-                {% endfor %}
-              </div>
-            {% endif %}
-          {% endfor %}
+	<div class="container mt-4">
+		<h2 class="mb-3">Generate Expense Report</h2>
+		<div class="card">
+			<div class="card-body">
+				<form method="post" class="form">
+					{% csrf_token %}
+					{% for field in form %}
+						{% if field.name != 'chart_options' %}
+							<div class="form-group {% if field.name == 'category' %}horizontal-select{% endif %}">
+								<label>{{ field.label }}</label>
+								{{ field }}
+								{% if field.help_text %}
+									<small class="form-text text-muted">{{ field.help_text }}</small>
+								{% endif %}
+								{% for error in field.errors %}
+									<div class="alert alert-danger">{{ error }}</div>
+								{% endfor %}
+							</div>
+						{% endif %}
+					{% endfor %}
 
-          <!-- Chart Options Section, controlled by JavaScript -->
-          <div id="chart-options-container">
-            <div class="form-group">
-              <label id="chart-options-label" style="display: none;">Category Expense Comparison</label>
-              <div id="chart-options-dropdown-placeholder"></div>
-            </div>
-          </div>
+					<!-- Chart Options Section, controlled by JavaScript -->
+					<div id="chart-options-container">
+						<div class="form-group">
+							<label id="chart-options-label" style="display: none;">Category Expense Comparison</label>
+							<div id="chart-options-dropdown-placeholder"></div>
+						</div>
+					</div>
 
-          <button type="submit" class="btn btn-primary">Generate Report</button>
-        </form>
+					<button type="submit" class="btn btn-primary">Generate Report</button>
+				</form>
 
-        {% if form_submitted %}
-          {% if expenses %}
-          <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Category</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for expense in expenses %}
-                <tr>
-                  <td>{{ expense.title }}</td>
-                  <td>{{ expense.amount }}</td>
-                  <td>{{ expense.date }}</td>
-                  <td>{{ expense.category.name }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          <div class="text-right">
-            <strong>Total: </strong> {{ total_expense }}
-          </div>
-          
-          <!-- Donut Chart Container -->
-          <div id="donutChartContainer">
-            <canvas id="donutChart"></canvas>
-          </div>
-          <div id="lineChartContainer">
-            <canvas id="lineChart"></canvas>
-          </div>
+				{% if form_submitted %}
+					{% if expenses %}
+					<h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Title</th>
+								<th>Amount</th>
+								<th>Date</th>
+								<th>Category</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for expense in expenses %}
+								<tr>
+									<td>{{ expense.title }}</td>
+									<td>{{ expense.amount }}</td>
+									<td>{{ expense.date }}</td>
+									<td>{{ expense.category.name }}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					<div class="text-right">
+						<strong>Total: </strong> {{ total_expense }}
+					</div>
+					
+					<!-- Donut Chart Container -->
+					<div id="donutChartContainer">
+						<canvas id="donutChart"></canvas>
+					</div>
+					<!-- Line Chart Container -->
+					<div id="lineChartContainer">
+						<canvas id="lineChart"></canvas>
+					</div>
+					<!-- Polar Area Chart Container -->
+					<div id="polarAreaChartContainer">
+						<canvas id="polarAreaChart"></canvas>
+					</div>
 
-          <div class="alert alert-success mt-4">
-            Report saved under <a href="{% url 'view_reports' %}">Existing Reports</a>.
-          </div>
-        {% else %}
-          <h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
-          <p>No expenses found for this period.</p>
-        {% endif %}
-      {% endif %}
-    </div>
-  </div>
+					<div class="alert alert-success mt-4">
+						Report saved under <a href="{% url 'view_reports' %}">Existing Reports</a>.
+					</div>
+				{% else %}
+					<h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
+					<p>No expenses found for this period.</p>
+				{% endif %}
+			{% endif %}
+		</div>
+	</div>
 </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const categoryCheckboxes = document.querySelectorAll('input[name="category"]');
-      const chartOptionsContainer = document.getElementById('chart-options-container');
-      const chartOptionsLabel = document.getElementById('chart-options-label');
-      const chartOptionsDropdownPlaceholder = document.getElementById('chart-options-dropdown-placeholder');
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const categoryCheckboxes = document.querySelectorAll('input[name="category"]');
+			const chartOptionsContainer = document.getElementById('chart-options-container');
+			const chartOptionsLabel = document.getElementById('chart-options-label');
+			const chartOptionsDropdownPlaceholder = document.getElementById('chart-options-dropdown-placeholder');
 
-      function updateChartOptionsVisibility() {
-        const selectedCategories = [...categoryCheckboxes].filter(checkbox => checkbox.checked).length;
-        if (selectedCategories > 1) {
-          chartOptionsLabel.style.display = 'block';
-          chartOptionsDropdownPlaceholder.innerHTML = `{{ form.chart_options }}`;
-          chartOptionsContainer.style.display = 'block';
-        } else {
-          chartOptionsLabel.style.display = 'none';
-          chartOptionsDropdownPlaceholder.innerHTML = '';
-          chartOptionsContainer.style.display = 'none';
-        }
-      }
+			function updateChartOptionsVisibility() {
+				const selectedCategories = [...categoryCheckboxes].filter(checkbox => checkbox.checked).length;
+				if (selectedCategories > 1) {
+					chartOptionsLabel.style.display = 'block';
+					chartOptionsDropdownPlaceholder.innerHTML = `{{ form.chart_options }}`;
+					chartOptionsContainer.style.display = 'block';
+				} else {
+					chartOptionsLabel.style.display = 'none';
+					chartOptionsDropdownPlaceholder.innerHTML = '';
+					chartOptionsContainer.style.display = 'none';
+				}
+			}
 
-      updateChartOptionsVisibility();
+			updateChartOptionsVisibility();
 
-      categoryCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateChartOptionsVisibility);
-      });
-      // Initialize the Donut Chart
-      {% if donut_chart_data %}
-      var ctx = document.getElementById('donutChart').getContext('2d');
-      var chartData = JSON.parse('{{ donut_chart_data|safe }}');  // Get the donut chart data from the Django context
+			categoryCheckboxes.forEach(checkbox => {
+				checkbox.addEventListener('change', updateChartOptionsVisibility);
+			});
+			// Initialize the Donut Chart
+			{% if donut_chart_data %}
+			var ctx = document.getElementById('donutChart').getContext('2d');
+			var chartData = JSON.parse('{{ donut_chart_data|safe }}');  // Get the donut chart data from the Django context
 
-      var myDonutChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: chartData,  // Use the chart data directly
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      });
-      {% endif %}
+			var myDonutChart = new Chart(ctx, {
+				type: 'doughnut',
+				data: chartData,  // Use the chart data directly
+				options: {
+					responsive: true,
+					maintainAspectRatio: false
+				}
+			});
+			{% endif %}
+			// Initialize the Polar Area Chart
+			{% if donut_chart_data %}
+			var polarCtx = document.getElementById('polarAreaChart').getContext('2d');
+			var polarChartData = JSON.parse('{{ donut_chart_data|safe }}');  // Reusing donut chart data
+			var myPolarAreaChart = new Chart(polarCtx, {
+				type: 'polarArea',
+				data: polarChartData,
+				options: {
+						responsive: true,
+						maintainAspectRatio: false
+						// Additional options can be added here
+				}
+		});
+		{% endif %}
 
-      // Initialize the Line Chart
-      {% if line_chart_data %}
-    var lineCtx = document.getElementById('lineChart').getContext('2d');
-    var lineChartData = JSON.parse('{{ line_chart_data|safe }}');
-    var myLineChart = new Chart(lineCtx, {
-        type: 'line',
-        data: lineChartData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-    {% endif %}
-  });
+			// Initialize the Line Chart
+			{% if line_chart_data %}
+		var lineCtx = document.getElementById('lineChart').getContext('2d');
+		var lineChartData = JSON.parse('{{ line_chart_data|safe }}');
+		var myLineChart = new Chart(lineCtx, {
+				type: 'line',
+				data: lineChartData,
+				options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						scales: {
+								y: {
+										beginAtZero: true
+								}
+						}
+				}
+		});
+		{% endif %}
+	});
 </script>
 {% endblock %}

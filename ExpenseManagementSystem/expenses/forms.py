@@ -3,6 +3,12 @@ from .models import Expense, Category, UserProfile, RecurringExpense
 from django.forms import ModelForm
 from django.core.validators import RegexValidator
 
+CHART_CHOICES = [
+    ('donut', 'Donut Chart'),
+    ('line', 'Line Chart'),
+    ('polar', 'Polar Area Chart'),
+]
+
 class YourReportForm(forms.Form):
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
@@ -12,16 +18,7 @@ class YourReportForm(forms.Form):
         required=False
     )
     
-    chart_options = forms.ChoiceField(
-        choices=[
-            ('line_chart', 'Line Chart'),
-            ('donut_chart', 'Donut Chart'),
-            ('polar_area_chart', 'Polar Area Chart'),
-        ],
-        widget=forms.Select(attrs={'class': 'form-control'}),
-        required=False,
-        initial='',
-    )
+    chart_type = forms.ChoiceField(choices=CHART_CHOICES, required=False, label='Chart Type')
     
 class ExpenseForm(forms.ModelForm):
     category = forms.ModelChoiceField(

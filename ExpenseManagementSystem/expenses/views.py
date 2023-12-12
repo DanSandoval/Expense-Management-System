@@ -57,7 +57,7 @@ def generate_report_view(request):
 
         if category_queryset:
             donut_chart_data = generate_donut_chart_data(expenses)
-
+            polar_chart_data = generate_polar_chart_data(expenses)
             # Aggregate and format data for the line chart
             expenses_by_month = aggregate_expenses_by_month(expenses, start_date, end_date)
             line_chart_data = format_data_for_chart(expenses_by_month, start_date, end_date)
@@ -70,6 +70,7 @@ def generate_report_view(request):
             'start_date': start_date,
             'end_date': end_date,
             'donut_chart_data': donut_chart_data,
+            'polar_chart_data': polar_chart_data,
             'line_chart_data': json.dumps(line_chart_data, cls=DjangoJSONEncoder) if line_chart_data else None
         }
 
@@ -118,7 +119,7 @@ def get_random_color():
     # Function to generate a random color
     import random
     r = lambda: random.randint(0,255)
-    return f'rgba({r()}, {r()}, {r()}, 1)'
+    return f'rgba({r()}, {r()}, {r()}, 01)'
     
 def aggregate_expenses_by_month(expenses, start_date, end_date):
     expenses = expenses.annotate(
@@ -138,6 +139,24 @@ def generate_donut_chart_data(expenses):
         'datasets': [{'data': data, 'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56']}]
     }
     return json.dumps(donut_chart_data, cls=DjangoJSONEncoder)
+
+def generate_polar_chart_data(expenses):
+    category_totals = expenses.values('category__name').annotate(total=Sum('amount'))
+    labels = [category['category__name'] for category in category_totals]
+    data = [category['total'] for category in category_totals]
+
+    # Define colors with transparency using RGBA format
+    transparent_colors = [
+        'rgba(255, 99, 132, 0.5)',  # Red with 50% transparency
+        'rgba(54, 162, 235, 0.5)',  # Blue with 50% transparency
+        'rgba(255, 206, 86, 0.5)'   # Yellow with 50% transparency
+    ]
+
+    polar_chart_data = {
+        'labels': labels,
+        'datasets': [{'data': data, 'backgroundColor': transparent_colors}]
+    }
+    return json.dumps(polar_chart_data, cls=DjangoJSONEncoder)
 
 def generate_expense_report(user, start_date, end_date, category_queryset):
     if category_queryset:

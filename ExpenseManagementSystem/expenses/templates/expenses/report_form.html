@@ -58,13 +58,7 @@
 						{% endif %}
 					{% endfor %}
 
-					<!-- Chart Options Section, controlled by JavaScript -->
-					<div id="chart-options-container">
-						<div class="form-group">
-							<label id="chart-options-label" style="display: none;">Category Expense Comparison</label>
-							<div id="chart-options-dropdown-placeholder"></div>
-						</div>
-					</div>
+			
 
 					<button type="submit" class="btn btn-primary">Generate Report</button>
 				</form>
@@ -121,77 +115,83 @@
 	</div>
 </div>
 
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			const categoryCheckboxes = document.querySelectorAll('input[name="category"]');
-			const chartOptionsContainer = document.getElementById('chart-options-container');
-			const chartOptionsLabel = document.getElementById('chart-options-label');
-			const chartOptionsDropdownPlaceholder = document.getElementById('chart-options-dropdown-placeholder');
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chartTypeDropdown = document.getElementById('id_chart_type'); // Ensure this matches the ID of your chart type dropdown
 
-			function updateChartOptionsVisibility() {
-				const selectedCategories = [...categoryCheckboxes].filter(checkbox => checkbox.checked).length;
-				if (selectedCategories > 1) {
-					chartOptionsLabel.style.display = 'block';
-					chartOptionsDropdownPlaceholder.innerHTML = `{{ form.chart_options }}`;
-					chartOptionsContainer.style.display = 'block';
-				} else {
-					chartOptionsLabel.style.display = 'none';
-					chartOptionsDropdownPlaceholder.innerHTML = '';
-					chartOptionsContainer.style.display = 'none';
-				}
-			}
+        function displaySelectedChart() {
+            const selectedChartType = chartTypeDropdown.value;
 
-			updateChartOptionsVisibility();
+            // Hide all charts initially
+            document.getElementById('donutChartContainer').style.display = 'none';
+            document.getElementById('lineChartContainer').style.display = 'none';
+            document.getElementById('polarAreaChartContainer').style.display = 'none';
 
-			categoryCheckboxes.forEach(checkbox => {
-				checkbox.addEventListener('change', updateChartOptionsVisibility);
-			});
-			// Initialize the Donut Chart
-			{% if donut_chart_data %}
+            // Show the selected chart
+            if (selectedChartType === 'donut') {
+                document.getElementById('donutChartContainer').style.display = 'block';
+            } else if (selectedChartType === 'line') {
+                document.getElementById('lineChartContainer').style.display = 'block';
+            } else if (selectedChartType === 'polar') {
+                document.getElementById('polarAreaChartContainer').style.display = 'block';
+            }
+        }
+
+        if (chartTypeDropdown) {
+            chartTypeDropdown.addEventListener('change', displaySelectedChart);
+            displaySelectedChart(); // Call this function initially to set the correct chart display
+        } else {
+            console.error('Dropdown with ID "id_chart_type" not found.');
+        }
+
+		// Initialize the Donut Chart
+		{% if donut_chart_data %}
 			var ctx = document.getElementById('donutChart').getContext('2d');
-			var chartData = JSON.parse('{{ donut_chart_data|safe }}');  // Get the donut chart data from the Django context
+			var chartData = JSON.parse('{{ donut_chart_data|safe }}');
 
 			var myDonutChart = new Chart(ctx, {
 				type: 'doughnut',
-				data: chartData,  // Use the chart data directly
+				data: chartData,
 				options: {
 					responsive: true,
 					maintainAspectRatio: false
 				}
 			});
-			{% endif %}
-			// Initialize the Polar Area Chart
-			{% if donut_chart_data %}
+		{% endif %}
+
+		// Initialize the Polar Area Chart
+		{% if polar_chart_data %}
 			var polarCtx = document.getElementById('polarAreaChart').getContext('2d');
-			var polarChartData = JSON.parse('{{ donut_chart_data|safe }}');  // Reusing donut chart data
+			var polarChartData = JSON.parse('{{ polar_chart_data|safe }}');
+
 			var myPolarAreaChart = new Chart(polarCtx, {
 				type: 'polarArea',
 				data: polarChartData,
 				options: {
 						responsive: true,
 						maintainAspectRatio: false
-						// Additional options can be added here
 				}
-		});
+			});
 		{% endif %}
 
-			// Initialize the Line Chart
-			{% if line_chart_data %}
-		var lineCtx = document.getElementById('lineChart').getContext('2d');
-		var lineChartData = JSON.parse('{{ line_chart_data|safe }}');
-		var myLineChart = new Chart(lineCtx, {
-				type: 'line',
-				data: lineChartData,
-				options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						scales: {
-								y: {
-										beginAtZero: true
-								}
-						}
-				}
-		});
+		// Initialize the Line Chart
+		{% if line_chart_data %}
+			var lineCtx = document.getElementById('lineChart').getContext('2d');
+			var lineChartData = JSON.parse('{{ line_chart_data|safe }}');
+
+			var myLineChart = new Chart(lineCtx, {
+					type: 'line',
+					data: lineChartData,
+					options: {
+							responsive: true,
+							maintainAspectRatio: false,
+							scales: {
+									y: {
+											beginAtZero: true
+									}
+							}
+					}
+			});
 		{% endif %}
 	});
 </script>

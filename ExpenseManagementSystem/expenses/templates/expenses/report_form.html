@@ -66,29 +66,6 @@
 				{% if form_submitted %}
 					{% if expenses %}
 					<h3 class="mt-4">Expense Report from {{ start_date }} to {{ end_date }}</h3>
-					<table class="table">
-						<thead>
-							<tr>
-								<th>Title</th>
-								<th>Amount</th>
-								<th>Date</th>
-								<th>Category</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for expense in expenses %}
-								<tr>
-									<td>{{ expense.title }}</td>
-									<td>{{ expense.amount }}</td>
-									<td>{{ expense.date }}</td>
-									<td>{{ expense.category.name }}</td>
-								</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-					<div class="text-right">
-						<strong>Total: </strong> {{ total_expense }}
-					</div>
 					
 					<!-- Donut Chart Container -->
 					<div id="donutChartContainer">
@@ -103,6 +80,29 @@
 						<canvas id="polarAreaChart"></canvas>
 					</div>
 
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Title</th>
+								<th>Amount</th>
+								<th>Date</th>
+								<th>Category</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for expense in expenses|dictsort:"date" %}
+            					<tr>
+              						<td>{{ expense.title }}</td>
+              						<td>{{ expense.amount }}</td>
+              						<td>{{ expense.date }}</td>
+              						<td>{{ expense.category.name }}</td>
+            					</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					<div class="text-right">
+						<strong>Total: </strong> {{ total_expense }}
+					</div>
 					<div class="alert alert-success mt-4">
 						Report saved under <a href="{% url 'view_reports' %}">Existing Reports</a>.
 					</div>

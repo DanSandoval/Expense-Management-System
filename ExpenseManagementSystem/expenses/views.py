@@ -253,7 +253,7 @@ def register_view(request):
 
 def expense_confirmation(request, expense_id):
     expense = Expense.objects.get(id=expense_id)
-    categories = expense.category.all()  # Retrieve all categories associated with the expense
+    categories = expense.category  # Retrieve all categories associated with the expense
     return render(request, 'expenses/expense_confirmation.html', {
         'expense': expense,
         'categories': categories,  # Add categories to the context

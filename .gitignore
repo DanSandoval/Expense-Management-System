@@ -11,3 +11,4 @@ ExpenseManagementSystem/db.sqlite3
 venv/
 *.xlsx
 ~$*.xlsx
+ExpenseManagementSystem/media/

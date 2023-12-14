@@ -44,12 +44,16 @@ def generate_report_view(request):
 
     if request.method == 'POST' and form.is_valid():
         form_submitted = True
-        report = create_and_save_report_instance(form, request.user)
+        custom_title = form.cleaned_data.get('custom_title')
+        report = create_and_save_report_instance(form, request.user, custom_title)
         generate_and_save_report_data(report, form, request.user)
 
+        custom_title = form.cleaned_data.get('custom_title')
         start_date = form.cleaned_data['start_date']
         end_date = form.cleaned_data['end_date']
         category_queryset = form.cleaned_data.get('category')
+        if not custom_title:
+            custom_title = f"Report from {start_date} to {end_date}"
 
         report_data = generate_expense_report(request.user, start_date, end_date, category_queryset)
         expenses = report_data['expenses']
@@ -165,10 +169,16 @@ def generate_expense_report(user, start_date, end_date, category_queryset):
         expenses = Expense.objects.filter(user=user, date__range=[start_date, end_date])
     return {'expenses': expenses}
 
-def create_and_save_report_instance(form, user):
+def create_and_save_report_instance(form, user, custom_title=None):
     start_date = form.cleaned_data['start_date']
     end_date = form.cleaned_data['end_date']
-    report = Report(user=user, title=f"Report from {start_date} to {end_date}")
+    title = custom_title if custom_title else f"Report from {start_date} to {end_date}"
+    report = Report(
+        user=user, 
+        title=title,
+        start_date=start_date,  
+        end_date=end_date     
+    )
     report.save()
     return report
 
@@ -270,6 +280,15 @@ def profile_view(request):
 
 def report_detail(request, report_id):
     report = get_object_or_404(Report, pk=report_id)
-    return render(request, 'expenses/report_detail.html', {'report': report})
+
+    # Check if the report title matches the default format
+    default_title = f"Report from {report.start_date.strftime('%B %d, %Y')} to {report.end_date.strftime('%B %d, %Y')}"
+    show_report_period = report.title != default_title
+
+    context = {
+        'report': report,
+        'show_report_period': show_report_period,
+    }
+    return render(request, 'expenses/report_detail.html', context)
 
 

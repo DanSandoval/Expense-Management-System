@@ -7,6 +7,9 @@
         <div class="card-body">
             <p><strong>Report Title:</strong> {{ report.title }}</p>
             <p><strong>Created On:</strong> {{ report.created_date|date:"F j, Y, P" }}</p>
+            {% if show_report_period %}
+                <p><strong>Report Period:</strong> {{ report.start_date|date:"F j, Y" }} - {{ report.end_date|date:"F j, Y" }}</p>
+            {% endif %}
             {% if report.report_file %}
                 <p><a href="{{ report.report_file.url }}" class="btn btn-primary">Download Report</a></p>
             {% else %}

@@ -21,9 +21,9 @@
                     <td>{{ report.created_date|date:"M d, Y H:i" }}</td>
                     <td>
                         {% if report.report_file %}
-                        <a href="{{ report.report_file.url }}" class="btn btn-primary btn-sm" download ="{{ csv_file_name }}" download>Download</a>
+                        <a href="{{ report.report_file.url }}" class="btn btn-primary btn-sm" download="{{ report.title }}.csv">Download</a>
+                        <a href="{% url 'report_detail' report.id %}" class="btn btn-secondary btn-sm">View</a>
                         {% endif %}
-                        <!-- Additional actions like view details could go here -->
                     </td>
                 </tr>
                 {% empty %}

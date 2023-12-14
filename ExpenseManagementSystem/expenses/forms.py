@@ -10,6 +10,7 @@ CHART_CHOICES = [
 ]
 
 class YourReportForm(forms.Form):
+    custom_title = forms.CharField(max_length=100, required=False, label="Report Title (optional)")
     start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     category = forms.ModelMultipleChoiceField(

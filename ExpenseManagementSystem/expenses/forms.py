@@ -16,7 +16,7 @@ class YourReportForm(forms.Form):
     category = forms.ModelMultipleChoiceField(
         queryset=Category.objects.order_by('name').distinct(),
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'horizontal-select'}),
-        required=False
+        required=True
     )
     
     chart_type = forms.ChoiceField(choices=CHART_CHOICES, required=False, label='Chart Type')
@@ -25,7 +25,7 @@ class ExpenseForm(forms.ModelForm):
     category = forms.ModelChoiceField(
         queryset=Category.objects.all(),
         widget=forms.Select(),  # You can choose a different widget if you prefer
-        required=False
+        required=True
     )
 
     class Meta:

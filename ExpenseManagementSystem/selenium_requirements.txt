@@ -1,0 +1,15 @@
+# Selenium WebDriver
+selenium==4.30.0
+
+# WebDriver Manager (optional but helpful for managing driver versions)
+webdriver-manager==4.0.1
+
+# For handling waits and timeouts more effectively
+pytest-timeout==2.2.0
+
+# If you want to use pytest instead of Django's test runner
+pytest==7.4.3
+pytest-django==4.7.0
+
+# For capturing screenshots on test failures
+pytest-selenium==4.1.0

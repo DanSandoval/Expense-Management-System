@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-x17d8je196#t%h0p*gnnwnn=lm@d&iyzdt-7avl*jl7u%djuwq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['dansandoval.pythonanywhere.com']
+ALLOWED_HOSTS = ['dansandoval.pythonanywhere.com', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'expenses',
+    'selenium_tests',
 ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

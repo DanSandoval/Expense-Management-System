@@ -1,14 +1,39 @@
 # Ignore local settings
 settings_local.py
 
-# Ignore other common files/directories
+# Ignore Python cache files and compiled files
 __pycache__/
+*.py[cod]
+*$py.class
+
+# macOS specific files
 .DS_Store
+
+# Logs
 *.log
+selenium_tests.log
+
+# Databases
 db.sqlite3
 ExpenseManagementSystem/db.sqlite3
+
+# Temporary files
 ~$Plan.xlgitsx
+
+# Virtual environments
 venv/
+.venv/
+ENV/
+
+# Excel files (if not needed)
 *.xlsx
 ~$*.xlsx
+
+# Media files (if not needed)
 ExpenseManagementSystem/media/
+
+# Selenium test output directories and generated images
+edge_test_results/
+edge_test_screenshots/
+browser_tests/
+*.png

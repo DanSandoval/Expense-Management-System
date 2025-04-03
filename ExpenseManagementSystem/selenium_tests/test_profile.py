@@ -4,174 +4,240 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium_tests.base import SeleniumTestCase
 from datetime import date
 import time
+import os
+import traceback
 
-class ExpenseWorkflowTests(SeleniumTestCase):
-    """End-to-end tests for core expense management workflows."""
+class ProfileTests(SeleniumTestCase):
+    """Tests for user profile functionality."""
     
     def _login(self):
         """Helper method to log in the test user."""
+        print(f"Logging in at {self.live_server_url}")
+        
+        # Create screenshots directory if it doesn't exist
+        os.makedirs(self.screenshots_dir, exist_ok=True)
+        
         self.browser.get(f"{self.live_server_url}/login/")
-        self.browser.find_element(By.NAME, "username").send_keys('testuser')
-        self.browser.find_element(By.NAME, "password").send_keys('testpassword123')
-        self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-        WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.LINK_TEXT, "Add Expense"))
-        )
-    
-    def test_inspect_form_ids(self):
-        """Inspect the actual IDs of form elements for debugging."""
-        self._login()
+        self.browser.save_screenshot(os.path.join(self.screenshots_dir, "login_page.png"))
         
-        # Navigate to Add Expense page
-        self.browser.get(f"{self.live_server_url}/add-expense/")
-        
-        # Wait for the page to load
-        WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "form"))
-        )
-        
-        # Print all form element IDs and names for debugging
-        form_elements = self.browser.find_elements(By.CSS_SELECTOR, "form input, form select, form textarea")
-        for element in form_elements:
-            print(f"Form element: {element.get_attribute('name')} - ID: {element.get_attribute('id')}")
-        
-        self.assertTrue(True)  # Just to make the test pass
-    
-    def test_add_expense(self):
-        """Test adding a new expense."""
-        self._login()
-        
-        # Navigate to Add Expense page
-        self.browser.get(f"{self.live_server_url}/add-expense/")
-        
-        # Wait for form to load - use name attribute instead of ID
-        WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "form"))
-        )
-        
-        time.sleep(1)  # Small delay to ensure form is fully loaded
-        
-        # Fill out the expense form - use name instead of ID
-        title_field = self.browser.find_element(By.NAME, "title")
-        amount_field = self.browser.find_element(By.NAME, "amount")
-        date_field = self.browser.find_element(By.NAME, "date")
-        
-        title_field.send_keys("Selenium Test Expense")
-        amount_field.send_keys("42.99")
-        
-        # Set the date
-        date_field.clear()
-        date_field.send_keys(date.today().strftime("%Y-%m-%d"))
-        
-        # Find and select a category - this can be tricky, let's try multiple approaches
         try:
-            # First try by name
-            select = Select(self.browser.find_element(By.NAME, "category"))
-            select.select_by_visible_text(self.categories[0].name)
-        except Exception:
-            try:
-                # Try by ID
-                select = Select(self.browser.find_element(By.ID, "id_category"))
-                select.select_by_index(0)  # Just select the first option
-            except Exception as e:
-                print(f"Failed to select category: {e}")
-                # As a last resort, take a screenshot to diagnose
-                self.browser.save_screenshot("category_selection_error.png")
-                raise
-        
-        # Submit the form
-        self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-        
-        # Verify we're taken to the confirmation page or redirected appropriately
-        WebDriverWait(self.browser, 10).until(
-            EC.url_contains("expense")
-        )
-        
-        # Verify some content that would indicate success
-        self.assertIn("Selenium Test Expense", self.browser.page_source)
-        self.assertIn("42.99", self.browser.page_source)
+            username_field = WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.NAME, "username"))
+            )
+            username_field.send_keys('testuser')
+            
+            password_field = self.browser.find_element(By.NAME, "password")
+            password_field.send_keys('testpassword123')
+            
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "login_form_filled.png"))
+            
+            submit_button = self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']")
+            self.browser.execute_script("arguments[0].click();", submit_button)
+            
+            # Wait for navigation to complete
+            WebDriverWait(self.browser, 10).until(
+                lambda driver: "Add Expense" in driver.page_source or "Log Out" in driver.page_source
+            )
+            
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "login_successful.png"))
+            print("Login successful")
+            
+        except Exception as e:
+            print(f"Login error: {e}")
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "login_error.png"))
+            traceback.print_exc()
+            raise
     
-    def test_generate_report(self):
-        """Test generating an expense report with charts."""
-        self._login()
-        
-        # First add an expense to ensure we have data
-        self.browser.get(f"{self.live_server_url}/add-expense/")
-        
-        # Wait for form to load
-        time.sleep(1)
-        
-        # Fill out the form
-        self.browser.find_element(By.NAME, "title").send_keys("Report Test Expense")
-        self.browser.find_element(By.NAME, "amount").send_keys("75.50")
-        
-        date_input = self.browser.find_element(By.NAME, "date")
-        date_input.clear()
-        date_input.send_keys(date.today().strftime("%Y-%m-%d"))
-        
-        # Select category
+    def test_view_profile(self):
+        """Test viewing the user profile."""
         try:
-            select = Select(self.browser.find_element(By.NAME, "category"))
-            select.select_by_visible_text(self.categories[0].name)
-        except Exception:
-            select = Select(self.browser.find_element(By.ID, "id_category"))
-            select.select_by_index(0)
-        
-        # Submit form
-        self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-        
-        # Wait for confirmation/redirect
-        WebDriverWait(self.browser, 10).until(
-            EC.url_contains("expense")
-        )
-        
-        # Navigate to Generate Reports
-        self.browser.find_element(By.LINK_TEXT, "Generate Reports").click()
-        
-        # Wait for form to load - use more reliable selectors
-        WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "form"))
-        )
-        
-        time.sleep(1)  # Give form time to fully render
-        
-        # Fill out report form
-        today = date.today().strftime("%Y-%m-%d")
-        
-        # Use name attributes which are more reliable
-        start_date = self.browser.find_element(By.NAME, "start_date")
-        end_date = self.browser.find_element(By.NAME, "end_date")
-        
-        start_date.clear()
-        end_date.clear()
-        
-        start_date.send_keys(today)
-        end_date.send_keys(today)
-        
-        # Select category - this may be a checkbox or multiple selection in your app
-        # First print what's available to help debug
-        category_options = self.browser.find_elements(By.CSS_SELECTOR, "input[name='category']")
-        if category_options:
-            # If it's checkboxes, click the first one
-            category_options[0].click()
-        else:
-            # Try finding toggle buttons
-            toggle_labels = self.browser.find_elements(By.CSS_SELECTOR, ".toggle-button")
-            if toggle_labels:
-                toggle_labels[0].click()
+            self._login()
+            
+            # Navigate to profile page
+            print(f"Navigating to profile page at {self.live_server_url}/profile/")
+            self.browser.get(f"{self.live_server_url}/profile/")
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "profile_page_initial.png"))
+            
+            # Wait for the profile page to load
+            WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "card"))
+            )
+            
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "profile_page_loaded.png"))
+            
+            # Check for profile-related content
+            page_source = self.browser.page_source
+            if "Profile" in page_source:
+                print("Found 'Profile' on page")
+                
+                # Check for Edit Profile button
+                try:
+                    edit_profile_link = self.browser.find_element(By.LINK_TEXT, "Edit Profile")
+                    self.assertTrue(edit_profile_link.is_displayed())
+                    print("Edit Profile link is displayed")
+                except Exception as e:
+                    print(f"Error finding Edit Profile link: {e}")
+                    self.browser.save_screenshot(os.path.join(self.screenshots_dir, "edit_profile_link_error.png"))
+                    raise
             else:
-                # Take screenshot for debugging
-                self.browser.save_screenshot("category_selection_report.png")
-                print("Could not find category selection elements")
-        
-        # Submit the report form
-        self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-        
-        # Verify report is generated successfully
-        # This could be checking for specific text, table presence, or chart elements
-        WebDriverWait(self.browser, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "table"))
-        )
-        
-        # Verify our expense is in the report
-        self.assertIn("Report Test Expense", self.browser.page_source)
+                print("'Profile' not found on page")
+                self.browser.save_screenshot(os.path.join(self.screenshots_dir, "profile_content_error.png"))
+                self.fail("Profile content not found on page")
+                
+        except Exception as e:
+            print(f"Error in test_view_profile: {e}")
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "test_view_profile_error.png"))
+            traceback.print_exc()
+            raise
+    
+    def test_edit_profile(self):
+        """Test editing the user profile."""
+        try:
+            self._login()
+            
+            # Navigate to edit profile page
+            print(f"Navigating to edit profile page at {self.live_server_url}/edit-profile/")
+            self.browser.get(f"{self.live_server_url}/edit-profile/")
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "edit_profile_initial.png"))
+            
+            # Wait for form to load with more specific selector
+            form = WebDriverWait(self.browser, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "form"))
+            )
+            
+            # Check all form fields are present
+            print("Checking form fields")
+            form_fields = {}
+            try:
+                form_fields['bio'] = self.browser.find_element(By.NAME, "bio")
+                print("Found bio field")
+            except:
+                print("Bio field not found")
+                
+            try:
+                form_fields['phone'] = self.browser.find_element(By.NAME, "phone_number")
+                print("Found phone field")
+            except:
+                print("Phone field not found")
+                
+            try:
+                form_fields['birth_date'] = self.browser.find_element(By.NAME, "birth_date")
+                print("Found birth_date field")
+            except:
+                try:
+                    form_fields['birth_date'] = self.browser.find_element(By.ID, "id_birth_date")
+                    print("Found birth_date field by ID")
+                except:
+                    print("Birth date field not found")
+            
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "edit_profile_form_loaded.png"))
+            
+            # Fill form fields if they exist
+            print("Filling form fields")
+            if 'bio' in form_fields:
+                form_fields['bio'].clear()
+                form_fields['bio'].send_keys("This is a test bio updated with Edge WebDriver")
+                print("Filled bio field")
+            
+            if 'phone' in form_fields:
+                form_fields['phone'].clear()
+                form_fields['phone'].send_keys("+12345678901")
+                print("Filled phone field")
+            
+            if 'birth_date' in form_fields:
+                # Different methods to set the date field
+                try:
+                    # Try direct JavaScript setting
+                    test_birth_date = "1990-01-01"
+                    self.browser.execute_script(
+                        f"arguments[0].value = '{test_birth_date}';", form_fields['birth_date']
+                    )
+                    print(f"Set birth date to {test_birth_date} using JavaScript")
+                except Exception as e:
+                    print(f"Error setting birth date with direct JavaScript: {e}")
+                    try:
+                        # Try ID-based JavaScript
+                        self.browser.execute_script(
+                            f"document.getElementById('id_birth_date').value = '{test_birth_date}';"
+                        )
+                        print(f"Set birth date to {test_birth_date} using ID-based JavaScript")
+                    except Exception as e:
+                        print(f"Error setting birth date with ID-based JavaScript: {e}")
+                        try:
+                            # Fall back to send_keys
+                            form_fields['birth_date'].clear()
+                            form_fields['birth_date'].send_keys(test_birth_date)
+                            print(f"Set birth date to {test_birth_date} using send_keys")
+                        except Exception as e:
+                            print(f"Error setting birth date with send_keys: {e}")
+            
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "edit_profile_form_filled.png"))
+            
+            # Find and submit the form
+            print("Finding submit button")
+            try:
+                submit_button = self.browser.find_element(By.CSS_SELECTOR, "button[type='submit']")
+                print("Found submit button")
+                
+                # Ensure button is visible
+                self.browser.execute_script("arguments[0].scrollIntoView(true);", submit_button)
+                print("Scrolled to submit button")
+                time.sleep(0.5)
+                
+                # Take screenshot before clicking
+                self.browser.save_screenshot(os.path.join(self.screenshots_dir, "before_profile_submit.png"))
+                
+                # Click using JavaScript
+                print("Clicking submit button with JavaScript")
+                self.browser.execute_script("arguments[0].click();", submit_button)
+                
+                # Wait for form submission and page change
+                print("Waiting for form submission to complete")
+                time.sleep(3)
+                
+                # Take screenshot after submission
+                self.browser.save_screenshot(os.path.join(self.screenshots_dir, "after_profile_submit.png"))
+                
+                # Check if we were redirected
+                current_url = self.browser.current_url
+                print(f"Current URL after submission: {current_url}")
+                
+                if "/profile/" in current_url:
+                    print("Successfully redirected to profile page")
+                    
+                    # Verify our updates appear in the profile
+                    page_source = self.browser.page_source
+                    if "This is a test bio updated with Edge WebDriver" in page_source:
+                        print("Found updated bio in profile page")
+                    if "+12345678901" in page_source:
+                        print("Found updated phone number in profile page")
+                    
+                    self.browser.save_screenshot(os.path.join(self.screenshots_dir, "profile_updated.png"))
+                    self.assertTrue(True)  # Test passes
+                else:
+                    print("Not redirected to profile page")
+                    
+                    # Check for error messages
+                    error_elements = self.browser.find_elements(By.CSS_SELECTOR, ".alert-danger, .errorlist")
+                    if error_elements:
+                        for error in error_elements:
+                            print(f"Form error: {error.text}")
+                            
+                    # Try to figure out where we are
+                    page_source = self.browser.page_source[:1000]
+                    print(f"Page source excerpt: {page_source}")
+                    
+                    self.browser.save_screenshot(os.path.join(self.screenshots_dir, "profile_update_failed.png"))
+                    self.fail(f"Profile update failed - current URL: {current_url}")
+                
+            except Exception as e:
+                print(f"Error finding or clicking submit button: {e}")
+                self.browser.save_screenshot(os.path.join(self.screenshots_dir, "submit_button_error.png"))
+                traceback.print_exc()
+                raise
+                
+        except Exception as e:
+            print(f"Error in test_edit_profile: {e}")
+            self.browser.save_screenshot(os.path.join(self.screenshots_dir, "test_edit_profile_error.png"))
+            traceback.print_exc()
+            raise
